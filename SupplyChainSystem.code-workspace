@@ -1,0 +1,28 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"typescript.tsdk": "node_modules/typescript/lib",
+		"eslint.workingDirectories": [
+			{ "pattern": "apps/*/" },
+			{ "pattern": "packages/*/" }
+		],
+		"typescript.enablePromptUseWorkspaceTsdk": true,
+		"typescript.validate.enable": true,
+		"typescript.tsserver.experimental.enableProjectDiagnostics": true,
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit"
+		},
+		"eslint.validate": [
+			"javascript",
+			"javascriptreact",
+			"typescript",
+			"typescriptreact"
+		],
+		"eslint.alwaysShowStatus": true,
+		"editor.formatOnSave": true
+	}
+}

@@ -1,0 +1,12 @@
+# Build outputs
+.next
+out
+dist
+build
+
+# Dependencies
+node_modules
+
+# Generated files
+*.generated.*
+.turbo 

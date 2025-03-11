@@ -1,0 +1,14 @@
+# Build outputs
+.next
+out
+dist
+build
+
+# Dependencies
+node_modules
+
+# Only ignore specific problematic files, not entire directories
+# This allows ESLint to check most files while skipping only the ones with issues
+/src/api-client/index.tsx
+/src/app/suppliers/api/suppliers.api.tsx
+/src/types/order.tsx 

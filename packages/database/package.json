@@ -1,0 +1,21 @@
+{
+  "name": "@supply-chain-system/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.7.1",
+    "@supply-chain-system/shared": "*"
+  },
+  "devDependencies": {
+    "prisma": "^5.7.0",
+    "typescript": "^5.0.0"
+  }
+}

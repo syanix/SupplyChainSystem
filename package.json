@@ -1,0 +1,61 @@
+{
+  "name": "supply-chain-system",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:all": "concurrently \"npm run dev:web\" \"npm run dev:api\"",
+    "dev:web": "turbo run dev --filter=@supply-chain-system/web",
+    "dev:api": "turbo run start:dev --filter=api",
+    "build": "turbo run build",
+    "start": "turbo run start",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
+    "type-check": "turbo run type-check",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check": "turbo run lint type-check format",
+    "db:up": "docker-compose up -d",
+    "db:down": "docker-compose down",
+    "db:reset": "docker-compose down -v && docker-compose up -d",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@types/uuid": "^10.0.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.0.0",
+    "husky": "^8.0.0",
+    "prettier": "^3.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "npm@10.2.4",
+  "resolutions": {
+    "@nestjs/common": "^11.0.11",
+    "@nestjs/core": "^11.0.11",
+    "@nestjs/platform-express": "^11.0.11",
+    "@nestjs/swagger": "^7.3.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "@nestjs/passport": "^11.0.0",
+    "@nestjs/jwt": "^11.0.0",
+    "@nestjs/throttler": "^5.1.0"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.0.0",
+    "@fastify/helmet": "^13.0.1",
+    "@nestjs/platform-fastify": "^10.4.15",
+    "@types/cookie-parser": "^1.4.8",
+    "cookie-parser": "^1.4.7",
+    "uuid": "^11.1.0"
+  }
+}

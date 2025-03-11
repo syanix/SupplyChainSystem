@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    "target": "es2019",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "baseUrl": ".",
+    "paths": {
+      "@supply-chain-system/*": ["packages/*/src"]
+    }
+  },
+  "exclude": ["node_modules"],
+  "include": ["**/*.ts", "**/*.tsx"],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "eslint.workingDirectories": [
+      { "pattern": "apps/*/" },
+      { "pattern": "packages/*/" }
+    ],
+    "typescript.enablePromptUseWorkspaceTsdk": true
+  }
+}

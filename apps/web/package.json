@@ -1,0 +1,50 @@
+{
+  "name": "@supply-chain-system/web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{ts,tsx,js,jsx}\"",
+    "check": "npm run lint && npm run type-check && npm run format"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.0.0",
+    "@headlessui/react": "^1.7.17",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@supply-chain-system/database": "*",
+    "@supply-chain-system/shared": "*",
+    "@supply-chain-system/ui": "*",
+    "antd": "^5.0.0",
+    "axios": "^1.0.0",
+    "next": "^15.0.0",
+    "next-auth": "^4.24.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.0.0",
+    "swr": "^2.2.4",
+    "tailwindcss": "^3.4.0"
+  },
+  "devDependencies": {
+    "@types/next": "^8.0.7",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "15.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.3",
+    "postcss": "^8.4.32",
+    "prettier": "^3.5.3",
+    "typescript": "^5.0.0"
+  }
+}

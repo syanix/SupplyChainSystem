@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tenant {
+  id             String     @id @default(uuid())
+  name           String     @unique
+  slug           String     @unique
+  description    String?
+  logo           String?
+  primaryColor   String?
+  secondaryColor String?
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  orders         Order[]
+  products       Product[]
+  suppliers      Supplier[]
+  users          User[]
+
+  @@map("tenants")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String?
+  role      UserRole @default(STAFF)
+  tenantId  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  orders    Order[]
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+
+  @@map("users")
+}
+
+model Supplier {
+  id            String            @id @default(uuid())
+  name          String
+  description   String?
+  email         String?
+  phone         String?
+  website       String?
+  address       String
+  city          String?
+  state         String?
+  postalCode    String?
+  country       String?
+  status        String            @default("ACTIVE")
+  taxId         String?
+  paymentTerms  String?
+  notes         String?
+  customFields  Json?
+  tenantId      String
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  contacts      SupplierContact[]
+  legacyContacts Contact[]
+  orders        Order[]
+  products      Product[]
+  tenant        Tenant            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("suppliers")
+}
+
+model SupplierContact {
+  id         String   @id @default(uuid())
+  name       String
+  position   String?
+  email      String?
+  phone      String?
+  mobile     String?
+  notes      String?
+  isPrimary  Boolean  @default(true)
+  supplierId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  supplier   Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@map("supplier_contacts")
+}
+
+model Product {
+  id            String      @id @default(uuid())
+  name          String
+  description   String?
+  price         Float
+  cost          Float       @default(0)
+  stockQuantity Int         @default(0)
+  sku           String      @unique
+  barcode       String?
+  imageUrl      String?
+  isActive      Boolean     @default(true)
+  category      String?
+  attributes    Json?
+  supplierId    String
+  tenantId      String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  orderItems    OrderItem[]
+  supplier      Supplier    @relation(fields: [supplierId], references: [id])
+  tenant        Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([supplierId])
+  @@index([tenantId])
+  @@map("products")
+}
+
+model Order {
+  id                    String      @id @default(uuid())
+  orderNumber           String      @unique
+  status                String
+  orderDate             DateTime?
+  expectedDeliveryDate  DateTime?
+  actualDeliveryDate    DateTime?
+  shippingAddress       String?
+  billingAddress        String?
+  subtotal              Float       @default(0)
+  taxAmount             Float       @default(0)
+  shippingCost          Float       @default(0)
+  totalAmount           Float
+  notes                 String?
+  paymentMethod         String?
+  paymentStatus         String?
+  trackingNumber        String?
+  supplierOrderReference String?
+  supplierId            String
+  userId                String
+  tenantId              String
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  items                 OrderItem[]
+  supplier              Supplier    @relation(fields: [supplierId], references: [id])
+  tenant                Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user                  User        @relation(fields: [userId], references: [id])
+
+  @@index([supplierId])
+  @@index([userId])
+  @@index([tenantId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String
+  productId   String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+  notes       String?
+  sku         String?
+  productName String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  order       Order    @relation(fields: [orderId], references: [id])
+  product     Product  @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Contact {
+  id         String   @id @default(uuid())
+  name       String
+  email      String
+  phone      String
+  supplierId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  supplier   Supplier @relation(fields: [supplierId], references: [id])
+
+  @@index([supplierId])
+  @@map("contacts")
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING
+  CONFIRMED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
