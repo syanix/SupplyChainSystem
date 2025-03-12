@@ -11,3 +11,6 @@ tsconfig.tsbuildinfo
 .env.test
 .DS_Store
 .next
+
+# Husky (ignore auto-generated files)
+.husky/_

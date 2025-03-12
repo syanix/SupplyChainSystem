@@ -1,0 +1,25 @@
+name: Update Deployment Dashboard
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+
+jobs:
+  update-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Update deployment data
+        run: |
+          mkdir -p dashboard
+          echo "{\"last_deployment\": \"$(date)\", \"status\": \"${{ github.event.workflow_run.conclusion }}\", \"commit\": \"${{ github.event.workflow_run.head_commit.message }}\"}" > dashboard/data.json
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dashboard

@@ -16,6 +16,7 @@ This system is designed to help small businesses manage their supply chain opera
 - [API Documentation](./docs/API.md) - API endpoints and usage
 - [Architecture Overview](./docs/ARCHITECTURE.md) - System architecture details
 - [Deployment Guide](./docs/DEPLOYMENT.md) - How to deploy the system
+- [CI/CD Setup](./CICD_README.md) - CI/CD workflows and deployment configurations
 
 ## Core Features
 
@@ -80,6 +81,18 @@ The system follows a modular, componentized, layered architecture to facilitate 
 - TLS 1.3 enforced via security headers
 - Comprehensive audit logging
 - Rate limiting to prevent abuse
+
+## CI/CD Pipeline
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+- Automated testing on all pull requests
+- Automated deployments to staging and production environments
+- Database migration workflows
+- Deployment dashboard for monitoring
+- Automatic rollback on failed deployments
+
+For more details, see the [CI/CD Setup Guide](./CICD_README.md).
 
 ## Testing Strategy
 
