@@ -19,13 +19,18 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Fixed Fly.io deployment issues:
+  - Created a new multi-stage Dockerfile that properly handles the monorepo structure
+  - Fixed the dependency resolution for local packages (@supply-chain-system/shared)
+  - Added proper .dockerignore files at both root and app levels
+  - Ensured shared packages are built before the API in the Docker build process
+  - Updated fly.toml files with proper build context pointing to the monorepo root
 - Enhanced API dependency management:
   - Updated API package.json to ensure shared packages are built first
   - Added a build:deps script that builds all shared packages
   - Modified all API scripts to run build:deps when needed
   - This ensures proper dependency order during development and deployment
 - Improved Fly.io deployment configuration:
-  - Created a multi-stage Dockerfile for the API application
   - Updated fly.toml and fly.staging.toml to use the Dockerfile
   - Configured the build process to build shared packages first
   - Added .dockerignore to optimize Docker builds

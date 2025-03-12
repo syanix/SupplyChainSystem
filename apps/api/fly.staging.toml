@@ -1,6 +1,10 @@
 app = "supply-chain-system-api-staging"
 primary_region = "syd"
 
+[build]
+  dockerfile = "Dockerfile"
+  context = "../.."
+
 [env]
   NODE_ENV = "staging"
   PORT = "3001"
