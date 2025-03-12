@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface PaginationProps {
   currentPage: number;
@@ -37,17 +37,17 @@ export const Pagination = ({
     // Always show first and last page
     if (shouldShowLeftDots && shouldShowRightDots) {
       const middleRange = range(leftSiblingIndex, rightSiblingIndex);
-      return [1, '...', ...middleRange, '...', totalPages];
+      return [1, "...", ...middleRange, "...", totalPages];
     }
 
     if (shouldShowLeftDots && !shouldShowRightDots) {
       const rightRange = range(leftSiblingIndex, totalPages);
-      return [1, '...', ...rightRange];
+      return [1, "...", ...rightRange];
     }
 
     if (!shouldShowLeftDots && shouldShowRightDots) {
       const leftRange = range(1, rightSiblingIndex);
-      return [...leftRange, '...', totalPages];
+      return [...leftRange, "...", totalPages];
     }
 
     return range(1, totalPages);
@@ -58,7 +58,7 @@ export const Pagination = ({
   return (
     <nav
       className={`flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 ${
-        className || ''
+        className || ""
       }`}
     >
       <div className="hidden md:-mt-px md:flex">
@@ -67,8 +67,8 @@ export const Pagination = ({
           disabled={currentPage === 1}
           className={`inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium ${
             currentPage === 1
-              ? 'cursor-not-allowed text-gray-300'
-              : 'text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              ? "cursor-not-allowed text-gray-300"
+              : "text-gray-500 hover:border-gray-300 hover:text-gray-700"
           }`}
         >
           <svg
@@ -88,7 +88,7 @@ export const Pagination = ({
         </button>
 
         {pages.map((page, index) => {
-          if (page === '...') {
+          if (page === "...") {
             return (
               <span
                 key={`ellipsis-${index}`}
@@ -105,8 +105,8 @@ export const Pagination = ({
               onClick={() => onPageChange(page as number)}
               className={`inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium ${
                 currentPage === page
-                  ? 'border-indigo-500 text-indigo-600'
-                  : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
+                  ? "border-indigo-500 text-indigo-600"
+                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
               }`}
             >
               {page}
@@ -119,8 +119,8 @@ export const Pagination = ({
           disabled={currentPage === totalPages}
           className={`inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium ${
             currentPage === totalPages
-              ? 'cursor-not-allowed text-gray-300'
-              : 'text-gray-500 hover:border-gray-300 hover:text-gray-700'
+              ? "cursor-not-allowed text-gray-300"
+              : "text-gray-500 hover:border-gray-300 hover:text-gray-700"
           }`}
         >
           Next
@@ -147,14 +147,14 @@ export const Pagination = ({
           disabled={currentPage === 1}
           className={`inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium ${
             currentPage === 1
-              ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+              : "bg-white text-gray-700 hover:bg-gray-50"
           }`}
         >
           Previous
         </button>
         <div className="text-sm text-gray-700">
-          Page <span className="font-medium">{currentPage}</span> of{' '}
+          Page <span className="font-medium">{currentPage}</span> of{" "}
           <span className="font-medium">{totalPages}</span>
         </div>
         <button
@@ -162,8 +162,8 @@ export const Pagination = ({
           disabled={currentPage === totalPages}
           className={`inline-flex items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium ${
             currentPage === totalPages
-              ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? "cursor-not-allowed bg-gray-100 text-gray-400"
+              : "bg-white text-gray-700 hover:bg-gray-50"
           }`}
         >
           Next
@@ -171,4 +171,4 @@ export const Pagination = ({
       </div>
     </nav>
   );
-}; 
+};

@@ -95,12 +95,14 @@ The database is designed with a multi-tenant architecture:
 
 The system implements a multi-tenant architecture with the following isolation mechanisms:
 
-1. **Database Level**: 
+1. **Database Level**:
+
    - Each table includes a `tenant_id` column
    - Row-Level Security (RLS) policies enforce tenant isolation
    - Database functions validate tenant context
 
 2. **Application Level**:
+
    - JWT tokens include tenant information
    - Middleware validates tenant access for each request
    - Services filter data by tenant ID
@@ -115,6 +117,7 @@ The system implements a multi-tenant architecture with the following isolation m
 ### Authentication and Authorization
 
 1. **Authentication**:
+
    - JWT-based authentication
    - Tokens include user ID, role, and tenant ID
    - Token expiration and refresh mechanism
@@ -127,6 +130,7 @@ The system implements a multi-tenant architecture with the following isolation m
 ### Data Security
 
 1. **Data Encryption**:
+
    - TLS for data in transit
    - AES-256 encryption for sensitive data at rest
    - Secure storage of credentials and secrets

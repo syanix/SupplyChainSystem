@@ -17,4 +17,4 @@ export interface GoodsReceiptItem {
   orderItemId: string;
   createdAt: Date;
   updatedAt: Date;
-} 
+}

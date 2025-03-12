@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface BreadcrumbItem {
   label: string;
@@ -10,7 +10,7 @@ export interface BreadcrumbProps {
   className?: string;
 }
 
-export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
+export function Breadcrumb({ items, className = "" }: BreadcrumbProps) {
   return (
     <nav className={`flex ${className}`}>
       <ol className="flex items-center space-x-2">
@@ -29,4 +29,4 @@ export function Breadcrumb({ items, className = '' }: BreadcrumbProps) {
       </ol>
     </nav>
   );
-} 
+}

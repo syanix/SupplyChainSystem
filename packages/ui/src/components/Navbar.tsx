@@ -1,5 +1,5 @@
-import React, { Fragment } from 'react';
-import { Menu, Transition } from '@headlessui/react';
+import React, { Fragment } from "react";
+import { Menu, Transition } from "@headlessui/react";
 
 export interface NavbarProps {
   onMenuButtonClick: () => void;
@@ -129,7 +129,7 @@ export const Navbar = ({ onMenuButtonClick, user, onLogout }: NavbarProps) => {
                       <a
                         href="/profile"
                         className={`${
-                          active ? 'bg-gray-100' : ''
+                          active ? "bg-gray-100" : ""
                         } block px-4 py-2 text-sm text-gray-700`}
                       >
                         Your Profile
@@ -141,7 +141,7 @@ export const Navbar = ({ onMenuButtonClick, user, onLogout }: NavbarProps) => {
                       <a
                         href="/settings"
                         className={`${
-                          active ? 'bg-gray-100' : ''
+                          active ? "bg-gray-100" : ""
                         } block px-4 py-2 text-sm text-gray-700`}
                       >
                         Settings
@@ -153,7 +153,7 @@ export const Navbar = ({ onMenuButtonClick, user, onLogout }: NavbarProps) => {
                       <button
                         onClick={onLogout}
                         className={`${
-                          active ? 'bg-gray-100' : ''
+                          active ? "bg-gray-100" : ""
                         } block w-full text-left px-4 py-2 text-sm text-gray-700`}
                       >
                         Sign out
@@ -168,4 +168,4 @@ export const Navbar = ({ onMenuButtonClick, user, onLogout }: NavbarProps) => {
       </div>
     </div>
   );
-}; 
+};

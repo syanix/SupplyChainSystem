@@ -1,7 +1,7 @@
-import React, { useState, Fragment } from 'react';
-import { Transition } from '@headlessui/react';
+import React, { useState, Fragment } from "react";
+import { Transition } from "@headlessui/react";
 
-export type TooltipPosition = 'top' | 'right' | 'bottom' | 'left';
+export type TooltipPosition = "top" | "right" | "bottom" | "left";
 
 export interface TooltipProps {
   content: React.ReactNode;
@@ -13,7 +13,7 @@ export interface TooltipProps {
 
 export const Tooltip = ({
   content,
-  position = 'top',
+  position = "top",
   delay = 0,
   children,
   className,
@@ -23,7 +23,7 @@ export const Tooltip = ({
 
   const handleMouseEnter = () => {
     if (timeoutId) clearTimeout(timeoutId);
-    
+
     if (delay === 0) {
       setIsOpen(true);
     } else {
@@ -40,17 +40,19 @@ export const Tooltip = ({
   };
 
   const positionStyles = {
-    top: 'bottom-full left-1/2 transform -translate-x-1/2 -translate-y-1 mb-2',
-    right: 'left-full top-1/2 transform -translate-y-1/2 translate-x-1 ml-2',
-    bottom: 'top-full left-1/2 transform -translate-x-1/2 translate-y-1 mt-2',
-    left: 'right-full top-1/2 transform -translate-y-1/2 -translate-x-1 mr-2',
+    top: "bottom-full left-1/2 transform -translate-x-1/2 -translate-y-1 mb-2",
+    right: "left-full top-1/2 transform -translate-y-1/2 translate-x-1 ml-2",
+    bottom: "top-full left-1/2 transform -translate-x-1/2 translate-y-1 mt-2",
+    left: "right-full top-1/2 transform -translate-y-1/2 -translate-x-1 mr-2",
   };
 
   const arrowStyles = {
-    top: 'bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full border-t-gray-900 border-l-transparent border-r-transparent border-b-transparent',
-    right: 'left-0 top-1/2 transform -translate-x-full -translate-y-1/2 border-r-gray-900 border-t-transparent border-b-transparent border-l-transparent',
-    bottom: 'top-0 left-1/2 transform -translate-x-1/2 -translate-y-full border-b-gray-900 border-l-transparent border-r-transparent border-t-transparent',
-    left: 'right-0 top-1/2 transform translate-x-full -translate-y-1/2 border-l-gray-900 border-t-transparent border-b-transparent border-r-transparent',
+    top: "bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full border-t-gray-900 border-l-transparent border-r-transparent border-b-transparent",
+    right:
+      "left-0 top-1/2 transform -translate-x-full -translate-y-1/2 border-r-gray-900 border-t-transparent border-b-transparent border-l-transparent",
+    bottom:
+      "top-0 left-1/2 transform -translate-x-1/2 -translate-y-full border-b-gray-900 border-l-transparent border-r-transparent border-t-transparent",
+    left: "right-0 top-1/2 transform translate-x-full -translate-y-1/2 border-l-gray-900 border-t-transparent border-b-transparent border-r-transparent",
   };
 
   return (
@@ -73,7 +75,7 @@ export const Tooltip = ({
         leaveTo="opacity-0 translate-y-1"
       >
         <div
-          className={`absolute z-50 ${positionStyles[position]} ${className || ''}`}
+          className={`absolute z-50 ${positionStyles[position]} ${className || ""}`}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
@@ -87,4 +89,4 @@ export const Tooltip = ({
       </Transition>
     </div>
   );
-}; 
+};

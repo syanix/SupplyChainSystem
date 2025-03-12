@@ -14,4 +14,4 @@ export interface CreateTenantRequest {
 export interface UpdateTenantRequest {
   name?: string;
   slug?: string;
-} 
+}

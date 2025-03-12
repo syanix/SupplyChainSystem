@@ -40,6 +40,7 @@ The Docker Compose configuration also includes pgAdmin, a web-based administrati
 Once logged in, you can add a new server with the following details:
 
 1. In the "General" tab:
+
    - **Name**: Supply Chain DB
 
 2. In the "Connection" tab:
@@ -82,11 +83,13 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/supply_chain"
 If you're having trouble connecting to the database, try the following:
 
 1. Ensure the Docker containers are running:
+
    ```bash
    docker-compose ps
    ```
 
 2. Check the container logs:
+
    ```bash
    docker-compose logs postgres
    ```
@@ -123,4 +126,4 @@ If you prefer to install PostgreSQL directly on your system instead of using Doc
 
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Prisma Documentation](https://www.prisma.io/docs/)
-- [Docker PostgreSQL Image](https://hub.docker.com/_/postgres) 
+- [Docker PostgreSQL Image](https://hub.docker.com/_/postgres)

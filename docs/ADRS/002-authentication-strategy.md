@@ -13,16 +13,19 @@ The Supply Chain Management System requires a secure, scalable, and user-friendl
 We will implement a **JWT-based authentication system with NextAuth.js** for the frontend and a custom JWT implementation for the backend API with the following characteristics:
 
 1. **Frontend Authentication (NextAuth.js)**:
+
    - NextAuth.js will handle the authentication flow in the Next.js application
    - JWT tokens will be stored in HTTP-only cookies for security
    - Session management will be handled by NextAuth.js
 
 2. **Backend Authentication (NestJS)**:
+
    - Custom JWT implementation using NestJS JWT module
    - Token validation middleware for all protected routes
    - Role-based access control (RBAC) for authorization
 
 3. **Token Structure**:
+
    - User ID
    - User email
    - User role
@@ -37,10 +40,12 @@ We will implement a **JWT-based authentication system with NextAuth.js** for the
 ## Alternatives Considered
 
 1. **Session-Based Authentication**:
+
    - Pros: Simpler to implement, easier to revoke
    - Cons: Requires server-side storage, less scalable, CSRF vulnerabilities
 
 2. **OAuth 2.0 with Identity Provider (e.g., Auth0, Okta)**:
+
    - Pros: Delegated authentication, strong security, social logins
    - Cons: External dependency, potential costs, more complex integration
 
@@ -71,27 +76,27 @@ We will implement a **JWT-based authentication system with NextAuth.js** for the
 
 ```typescript
 // apps/web/src/app/api/auth/[...nextauth]/route.ts
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
 
 export const authOptions = {
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         // Call API to validate credentials
         const response = await fetch(`${process.env.API_URL}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(credentials),
         });
-        
+
         const data = await response.json();
-        
+
         if (response.ok && data.user) {
           return {
             id: data.user.id,
@@ -102,7 +107,7 @@ export const authOptions = {
             accessToken: data.accessToken,
           };
         }
-        
+
         return null;
       },
     }),
@@ -130,11 +135,11 @@ export const authOptions = {
     },
   },
   pages: {
-    signIn: '/auth/login',
-    error: '/auth/error',
+    signIn: "/auth/login",
+    error: "/auth/error",
   },
   session: {
-    strategy: 'jwt',
+    strategy: "jwt",
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 };
@@ -147,12 +152,12 @@ export { handler as GET, handler as POST };
 
 ```typescript
 // apps/api/src/auth/auth.module.ts
-import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { PassportModule } from '@nestjs/passport';
-import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
-import { JwtStrategy } from './jwt.strategy';
+import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt";
+import { PassportModule } from "@nestjs/passport";
+import { AuthService } from "./auth.service";
+import { AuthController } from "./auth.controller";
+import { JwtStrategy } from "./jwt.strategy";
 
 @Module({
   imports: [
@@ -160,7 +165,7 @@ import { JwtStrategy } from './jwt.strategy';
     JwtModule.registerAsync({
       useFactory: () => ({
         secret: process.env.JWT_SECRET,
-        signOptions: { expiresIn: '15m' },
+        signOptions: { expiresIn: "15m" },
       }),
     }),
   ],
@@ -175,10 +180,10 @@ export class AuthModule {}
 
 ```typescript
 // apps/api/src/auth/jwt.strategy.ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { UsersService } from '../users/users.service';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { UsersService } from "../users/users.service";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -192,11 +197,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: any) {
     const user = await this.usersService.findOne(payload.sub, payload.tenantId);
-    
+
     if (!user) {
       throw new UnauthorizedException();
     }
-    
+
     return {
       id: payload.sub,
       email: payload.email,
@@ -211,11 +216,11 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
 ```typescript
 // apps/api/src/auth/jwt-auth.guard.ts
-import { Injectable } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Injectable } from "@nestjs/common";
+import { AuthGuard } from "@nestjs/passport";
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard('jwt') {}
+export class JwtAuthGuard extends AuthGuard("jwt") {}
 ```
 
 ## Security Considerations

@@ -1,8 +1,8 @@
 export enum SupplierStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  PENDING = 'pending',
-  BLOCKED = 'blocked',
+  ACTIVE = "active",
+  INACTIVE = "inactive",
+  PENDING = "pending",
+  BLOCKED = "blocked",
 }
 
 export interface Supplier {
@@ -41,4 +41,4 @@ export interface UpdateSupplierRequest {
   address?: string;
   contacts?: Contact[];
   status?: SupplierStatus;
-} 
+}

@@ -1,5 +1,5 @@
-import React, { Fragment } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import React, { Fragment } from "react";
+import { Dialog, Transition } from "@headlessui/react";
 
 export interface SidebarLink {
   name: string;
@@ -32,8 +32,8 @@ export const Sidebar = ({
     {
       links: [
         {
-          name: 'Dashboard',
-          href: '/dashboard',
+          name: "Dashboard",
+          href: "/dashboard",
           icon: ({ className }) => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -53,8 +53,8 @@ export const Sidebar = ({
           current: true,
         },
         {
-          name: 'Orders',
-          href: '/orders',
+          name: "Orders",
+          href: "/orders",
           icon: ({ className }) => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -73,8 +73,8 @@ export const Sidebar = ({
           ),
         },
         {
-          name: 'Products',
-          href: '/products',
+          name: "Products",
+          href: "/products",
           icon: ({ className }) => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -93,8 +93,8 @@ export const Sidebar = ({
           ),
         },
         {
-          name: 'Suppliers',
-          href: '/suppliers',
+          name: "Suppliers",
+          href: "/suppliers",
           icon: ({ className }) => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -115,11 +115,11 @@ export const Sidebar = ({
       ],
     },
     {
-      title: 'Settings',
+      title: "Settings",
       links: [
         {
-          name: 'Profile',
-          href: '/profile',
+          name: "Profile",
+          href: "/profile",
           icon: ({ className }) => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -138,8 +138,8 @@ export const Sidebar = ({
           ),
         },
         {
-          name: 'Business Settings',
-          href: '/settings',
+          name: "Business Settings",
+          href: "/settings",
           icon: ({ className }) => (
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -232,7 +232,7 @@ export const Sidebar = ({
                   <div className="flex-shrink-0 flex items-center px-4">
                     {logo || (
                       <div className="text-xl font-bold text-indigo-600">
-                        {tenant?.name || 'Supply Chain System'}
+                        {tenant?.name || "Supply Chain System"}
                       </div>
                     )}
                   </div>
@@ -252,8 +252,8 @@ export const Sidebar = ({
                               group flex items-center px-2 py-2 text-sm font-medium rounded-md
                               ${
                                 item.current
-                                  ? 'bg-indigo-50 text-indigo-600'
-                                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                  ? "bg-indigo-50 text-indigo-600"
+                                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                               }
                             `}
                           >
@@ -262,8 +262,8 @@ export const Sidebar = ({
                                 mr-3 flex-shrink-0 h-6 w-6
                                 ${
                                   item.current
-                                    ? 'text-indigo-600'
-                                    : 'text-gray-400 group-hover:text-gray-500'
+                                    ? "text-indigo-600"
+                                    : "text-gray-400 group-hover:text-gray-500"
                                 }
                               `}
                             />
@@ -290,7 +290,7 @@ export const Sidebar = ({
             <div className="flex items-center flex-shrink-0 px-4">
               {logo || (
                 <div className="text-xl font-bold text-indigo-600">
-                  {tenant?.name || 'Supply Chain System'}
+                  {tenant?.name || "Supply Chain System"}
                 </div>
               )}
             </div>
@@ -310,8 +310,8 @@ export const Sidebar = ({
                         group flex items-center px-2 py-2 text-sm font-medium rounded-md
                         ${
                           item.current
-                            ? 'bg-indigo-50 text-indigo-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                            ? "bg-indigo-50 text-indigo-600"
+                            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                         }
                       `}
                     >
@@ -320,8 +320,8 @@ export const Sidebar = ({
                           mr-3 flex-shrink-0 h-6 w-6
                           ${
                             item.current
-                              ? 'text-indigo-600'
-                              : 'text-gray-400 group-hover:text-gray-500'
+                              ? "text-indigo-600"
+                              : "text-gray-400 group-hover:text-gray-500"
                           }
                         `}
                       />
@@ -336,4 +336,4 @@ export const Sidebar = ({
       </div>
     </>
   );
-}; 
+};

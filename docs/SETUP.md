@@ -43,6 +43,7 @@ npm install
 ```
 
 This will install:
+
 - Root dependencies (Turbo, ESLint, etc.)
 - All dependencies for each package in the `packages/` directory
 - All dependencies for each application in the `apps/` directory
@@ -113,6 +114,7 @@ npm run dev
 ```
 
 This will start:
+
 - The NestJS API server on http://localhost:3001
 - The Next.js web application on http://localhost:3000
 - Watch mode for all shared packages
@@ -173,9 +175,11 @@ npm run format
 ### Common Issues
 
 1. **Package dependency issues**
+
    - Try cleaning node_modules and reinstalling: `rm -rf node_modules && npm install`
 
 2. **Database connection errors**
+
    - Verify PostgreSQL is running and credentials are correct
    - Check that the database exists: `createdb supply_chain_db`
 

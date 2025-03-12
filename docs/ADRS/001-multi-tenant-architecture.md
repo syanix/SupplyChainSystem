@@ -13,11 +13,13 @@ The Supply Chain Management System is designed as a SaaS platform that will serv
 We will implement a **shared database with tenant isolation** approach for our multi-tenant architecture with the following characteristics:
 
 1. **Database Level Isolation**:
+
    - All tables will include a `tenant_id` column
    - PostgreSQL Row-Level Security (RLS) policies will enforce tenant isolation
    - Database functions will validate tenant context
 
 2. **Application Level Isolation**:
+
    - JWT tokens will include tenant information
    - Middleware will validate tenant access for each request
    - Services will filter data by tenant ID
@@ -30,10 +32,12 @@ We will implement a **shared database with tenant isolation** approach for our m
 ## Alternatives Considered
 
 1. **Separate Database per Tenant**:
+
    - Pros: Strongest isolation, easier compliance for regulated industries
    - Cons: Higher operational complexity, higher costs, more difficult to maintain
 
 2. **Separate Schema per Tenant**:
+
    - Pros: Good isolation, easier to backup/restore individual tenants
    - Cons: Limited by database schema limits, more complex migrations
 
@@ -91,7 +95,7 @@ RLS policies will be applied to all tenant-specific tables:
 ```sql
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY tenant_isolation_policy ON users 
+CREATE POLICY tenant_isolation_policy ON users
   USING (tenant_id = current_setting('app.current_tenant_id')::UUID);
 ```
 
@@ -104,11 +108,11 @@ A tenant middleware will extract tenant information from the JWT token and set i
 export class TenantMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     const tenantId = req.user?.tenantId;
-    
+
     if (!tenantId) {
-      throw new UnauthorizedException('Tenant ID not found in token');
+      throw new UnauthorizedException("Tenant ID not found in token");
     }
-    
+
     req.tenantId = tenantId;
     next();
   }
@@ -143,4 +147,4 @@ export class UserRepository {
 
 - [Multi-Tenant Data Architecture (Microsoft)](https://docs.microsoft.com/en-us/azure/architecture/guide/multitenant/considerations/data-considerations)
 - [Row-Level Security in PostgreSQL](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
-- [OWASP Multi-Tenant Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Multitenancy_Security_Cheat_Sheet.html) 
+- [OWASP Multi-Tenant Security Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Multitenancy_Security_Cheat_Sheet.html)

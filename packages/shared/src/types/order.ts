@@ -1,11 +1,11 @@
 export enum OrderStatus {
-  DRAFT = 'DRAFT',
-  PENDING = 'PENDING',
-  PROCESSING = 'PROCESSING',
-  CONFIRMED = 'CONFIRMED',
-  SHIPPED = 'SHIPPED',
-  DELIVERED = 'DELIVERED',
-  CANCELLED = 'CANCELLED'
+  DRAFT = "DRAFT",
+  PENDING = "PENDING",
+  PROCESSING = "PROCESSING",
+  CONFIRMED = "CONFIRMED",
+  SHIPPED = "SHIPPED",
+  DELIVERED = "DELIVERED",
+  CANCELLED = "CANCELLED",
 }
 
 export interface OrderItem {
@@ -44,4 +44,4 @@ export interface CreateOrderRequest {
 
 export interface UpdateOrderRequest {
   status?: OrderStatus;
-} 
+}

@@ -46,8 +46,9 @@ There are two main options for setting up the database:
 3. **Access pgAdmin** (optional):
 
    Open your browser and navigate to http://localhost:5050
-   
+
    Login credentials:
+
    - Email: admin@example.com
    - Password: admin
 
@@ -68,6 +69,7 @@ There are two main options for setting up the database:
 If you prefer to install PostgreSQL directly on your system:
 
 1. **Download and install PostgreSQL**:
+
    - [PostgreSQL Downloads](https://www.postgresql.org/download/)
    - Choose the version for your operating system (version 15 recommended)
 
@@ -158,7 +160,7 @@ If you're having trouble connecting to the database:
    ```bash
    # For Docker setup
    docker-compose ps
-   
+
    # For manual installation
    sudo systemctl status postgresql
    ```
@@ -168,7 +170,7 @@ If you're having trouble connecting to the database:
    ```bash
    # For Docker setup
    docker exec supply-chain-postgres psql -U postgres -c "SELECT 1"
-   
+
    # For manual installation
    psql -U postgres -c "SELECT 1"
    ```
@@ -178,7 +180,7 @@ If you're having trouble connecting to the database:
    ```bash
    # For Docker setup
    docker-compose logs postgres
-   
+
    # For manual installation
    sudo journalctl -u postgresql
    ```
@@ -202,4 +204,4 @@ createdb -U postgres supply_chain
 
 - [PostgreSQL Documentation](https://www.postgresql.org/docs/)
 - [Prisma Documentation](https://www.prisma.io/docs/)
-- [Docker PostgreSQL Image](https://hub.docker.com/_/postgres) 
+- [Docker PostgreSQL Image](https://hub.docker.com/_/postgres)

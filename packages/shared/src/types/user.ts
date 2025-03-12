@@ -1,8 +1,8 @@
 export enum UserRole {
-  SUPER_ADMIN = 'SUPER_ADMIN',
-  ADMIN = 'ADMIN',
-  MANAGER = 'MANAGER',
-  STAFF = 'STAFF',
+  SUPER_ADMIN = "SUPER_ADMIN",
+  ADMIN = "ADMIN",
+  MANAGER = "MANAGER",
+  STAFF = "STAFF",
 }
 
 export interface User {
@@ -27,4 +27,4 @@ export interface UpdateUserRequest {
   name?: string;
   email?: string;
   role?: UserRole;
-} 
+}

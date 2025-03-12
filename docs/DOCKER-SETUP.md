@@ -23,6 +23,7 @@ docker-compose up -d
 ```
 
 This command starts PostgreSQL in detached mode with the following configuration:
+
 - PostgreSQL version: 15
 - Container name: supply_chain_db
 - Port: 5432 (mapped to host)
@@ -103,12 +104,15 @@ npm run db:seed
 ### Common Issues
 
 1. **Port conflicts**
+
    - If port 5432 is already in use, modify the port mapping in `docker-compose.yml`
 
 2. **Container not starting**
+
    - Check Docker logs: `docker-compose logs postgres`
 
 3. **Connection refused**
+
    - Ensure the container is running: `docker-compose ps`
    - Verify network settings: `docker network ls`
 

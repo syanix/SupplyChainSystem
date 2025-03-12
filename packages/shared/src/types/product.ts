@@ -32,4 +32,4 @@ export interface UpdateProductRequest {
   unit?: string;
   stock?: number;
   imageUrl?: string;
-} 
+}
