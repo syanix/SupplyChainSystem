@@ -19,6 +19,15 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Further optimized CI/CD workflow:
+  - Streamlined code commit process to only run the `check` script (lint + type-check + format)
+  - Kept full build and test process for pull requests
+  - This improves CI performance for regular commits while maintaining thorough checks for PRs
+- Improved CI/CD workflow:
+  - Separated code quality checks from deployment workflows
+  - Made staging and production deployments manually triggered via workflow_dispatch
+  - Added confirmation step for deployments to prevent accidental deployments
+  - Created separate workflow files for staging and production deployments
 - Fixed GitHub Actions formatting check:
   - Updated all Prettier commands to use `npx prettier` instead of direct `prettier` calls
   - This resolves the "command not found" error in GitHub Actions

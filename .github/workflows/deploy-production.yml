@@ -1,0 +1,140 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "yes" to confirm deployment to production'
+        required: true
+        default: "no"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        if: github.event.inputs.confirm != 'yes'
+        run: |
+          echo "Deployment not confirmed. Please type 'yes' to confirm."
+          exit 1
+
+  code-quality:
+    needs: validate
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Build packages first to ensure types are available
+      - name: Build packages
+        run: npm run build:packages
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Check formatting
+        run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
+
+  test:
+    needs: code-quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Build packages first to ensure types are available
+      - name: Build packages
+        run: npm run build
+
+      - name: Run tests
+        run: npm run test
+
+  deploy-production:
+    needs: test
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Deploy API to Fly.io (Production)
+        uses: superfly/flyctl-actions/setup-flyctl@master
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        with:
+          args: "deploy --config ./apps/api/fly.toml --remote-only"
+
+      - name: Deploy Web to Vercel (Production)
+        uses: amondnet/vercel-action@v20
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./apps/web
+          vercel-args: "--prod"
+          alias-domains: |
+            your-domain.com
+            www.your-domain.com
+
+      - name: Check deployment health
+        id: health_check
+        run: |
+          # Wait for deployment to stabilize
+          sleep 30
+
+          # Check API health endpoint
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.your-domain.com/health)
+
+          if [ "$HEALTH_STATUS" != "200" ]; then
+            echo "::set-output name=status::failure"
+          else
+            echo "::set-output name=status::success"
+          fi
+
+      - name: Rollback on failure
+        if: steps.health_check.outputs.status == 'failure'
+        run: |
+          # Rollback to previous version
+          git checkout HEAD~1
+          # Redeploy
+          npm run deploy
+
+      - name: Send Slack notification
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()

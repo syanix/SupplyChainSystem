@@ -6,7 +6,7 @@ This document outlines the CI/CD workflows and deployment configurations for the
 
 ### Main CI/CD Pipeline (`main.yml`)
 
-The main CI/CD pipeline handles testing, building, and deploying the application to both staging and production environments.
+The main CI/CD pipeline handles code quality checks with different behaviors for commits and pull requests:
 
 **Triggers:**
 
@@ -15,10 +15,44 @@ The main CI/CD pipeline handles testing, building, and deploying the application
 
 **Jobs:**
 
-1. **Code Quality**: Runs type checking, linting, and formatting checks
-2. **Test**: Runs tests and builds the application
-3. **Deploy to Staging**: Deploys to staging environment when changes are pushed to the `staging` branch
-4. **Deploy to Production**: Deploys to production environment when changes are pushed to the `main` branch
+1. **Code Quality**:
+   - For commits (push events): Only runs the `check` script (lint + type-check + format)
+   - For pull requests: Runs full type checking, linting, and formatting checks
+2. **Test**: Only runs for pull requests, includes building the application and running tests
+
+This approach optimizes CI performance for regular commits while maintaining thorough checks for PRs.
+
+### Staging Deployment (`deploy-staging.yml`)
+
+This workflow handles deployment to the staging environment. It is manually triggered.
+
+**Triggers:**
+
+- Manual trigger via GitHub Actions UI with confirmation
+
+**Jobs:**
+
+1. **Validate**: Ensures deployment was explicitly confirmed
+2. **Code Quality**: Runs type checking, linting, and formatting checks
+3. **Test**: Runs tests and builds the application
+4. **Deploy to Staging**: Deploys to staging environment
+
+### Production Deployment (`deploy-production.yml`)
+
+This workflow handles deployment to the production environment. It is manually triggered.
+
+**Triggers:**
+
+- Manual trigger via GitHub Actions UI with confirmation
+
+**Jobs:**
+
+1. **Validate**: Ensures deployment was explicitly confirmed
+2. **Code Quality**: Runs type checking, linting, and formatting checks
+3. **Test**: Runs tests and builds the application
+4. **Deploy to Production**: Deploys to production environment
+5. **Health Check**: Verifies the deployment was successful
+6. **Rollback**: Automatically rolls back if health check fails
 
 ### Pull Request Checks (`pull-request.yml`)
 
@@ -53,7 +87,7 @@ This workflow updates a deployment dashboard hosted on GitHub Pages.
 
 **Triggers:**
 
-- Completion of the main CI/CD pipeline
+- Completion of deployment workflows
 
 **Jobs:**
 
