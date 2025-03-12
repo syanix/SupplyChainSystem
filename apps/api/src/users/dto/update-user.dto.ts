@@ -1,6 +1,12 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { CreateUserDto } from "./create-user.dto";
-import { IsOptional, IsUUID, IsBoolean } from "class-validator";
+import {
+  IsOptional,
+  IsUUID,
+  IsBoolean,
+  MinLength,
+  Matches,
+} from "class-validator";
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({
@@ -20,4 +26,24 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsBoolean({ message: "isActive must be a boolean" })
   isActive?: boolean;
+
+  @ApiProperty({
+    example: "Password123!",
+    description:
+      "The new password for the user (min 6 chars, must include uppercase, lowercase, number, and special character)",
+    required: false,
+  })
+  @IsOptional()
+  @MinLength(6, { message: "Password must be at least 6 characters long" })
+  @Matches(/(?=.*[a-z])/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  @Matches(/(?=.*[A-Z])/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  @Matches(/(?=.*\d)/, { message: "Password must contain at least one number" })
+  @Matches(/(?=.*[@$!%*?&])/, {
+    message: "Password must contain at least one special character (@$!%*?&)",
+  })
+  password?: string;
 }

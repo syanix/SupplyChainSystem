@@ -30,13 +30,15 @@ export default function EditUserPage({ params }: { params: PageParams }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
-  const [formData, setFormData] = useState<Omit<User, 'id'>>({
+  const [formData, setFormData] = useState<Omit<User, 'id'> & { password?: string }>({
     name: '',
     email: '',
     role: '',
     tenantId: '',
     isActive: true,
+    password: '',
   });
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   // Properly unwrap params using use() from React
   const resolvedParams = use(params as any) as PageParams;
@@ -100,6 +102,7 @@ export default function EditUserPage({ params }: { params: PageParams }) {
           role: userData.role,
           tenantId: userData.tenantId,
           isActive: userData.isActive,
+          password: '',
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -113,6 +116,27 @@ export default function EditUserPage({ params }: { params: PageParams }) {
     }
   }, [session, status, router, userId]);
 
+  const validatePassword = (password: string): string | null => {
+    if (!password) return null; // Password is optional for updates
+
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character (@$!%*?&)';
+    }
+    return null;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
@@ -121,13 +145,34 @@ export default function EditUserPage({ params }: { params: PageParams }) {
       setFormData(prev => ({ ...prev, [name]: target.checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+
+      // Validate password if provided
+      if (name === 'password' && value) {
+        setPasswordError(validatePassword(value));
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate password if provided
+    if (formData.password) {
+      const passwordValidationError = validatePassword(formData.password);
+      if (passwordValidationError) {
+        setPasswordError(passwordValidationError);
+        return;
+      }
+    }
+
     setSubmitting(true);
     setError(null);
+
+    // Remove empty password from the payload
+    const payload = { ...formData };
+    if (!payload.password) {
+      delete payload.password;
+    }
 
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`, {
@@ -136,7 +181,7 @@ export default function EditUserPage({ params }: { params: PageParams }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session?.accessToken}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -256,6 +301,26 @@ export default function EditUserPage({ params }: { params: PageParams }) {
               />
               <span className="text-gray-700 text-sm font-bold">Active</span>
             </label>
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              className={`shadow appearance-none border ${passwordError ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
+              id="password"
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Leave blank to keep current password"
+            />
+            {passwordError && <p className="text-red-500 text-xs italic">{passwordError}</p>}
+            <p className="text-gray-500 text-xs mt-1">
+              Password must be at least 6 characters with uppercase, lowercase, number, and special
+              character.
+            </p>
           </div>
 
           <div className="flex items-center justify-between">
