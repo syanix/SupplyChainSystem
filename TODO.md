@@ -7,6 +7,9 @@
   - [x] Updated client components to use the correct type definitions
   - [x] Fixed TypeScript checking by converting client components to use server components for params handling
   - [x] Removed invalid tenant prop from Layout component usage
+- [x] Fix pre-commit hook configuration
+  - [x] Updated lint-staged configuration to use eslint and prettier directly
+  - [x] Resolved issues with file paths being passed to turbo commands
 
 ## Medium Priority
 

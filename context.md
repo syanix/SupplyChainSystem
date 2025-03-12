@@ -19,6 +19,9 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Fixed pre-commit hook configuration to properly handle file paths:
+  - Updated lint-staged configuration to use eslint and prettier directly instead of through turbo
+  - This resolves issues with file paths being passed to turbo commands
 - Fixed TypeScript issues with Next.js 15 page params by:
   - Converting client components to use server components for params handling
   - Properly handling params as Promises in server components
