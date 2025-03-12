@@ -19,6 +19,19 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Further fixed Vercel deployment configuration:
+  - Removed `alias-domains` parameter from GitHub Actions workflow
+  - This parameter should only be added once you have domains set up and ready to use
+  - Keeping the `root-directory: .` parameter to ensure correct path resolution
+- Fixed Vercel deployment path issues:
+  - Added `root-directory: .` parameter to the Vercel GitHub Action configuration
+  - This resolves the error where Vercel was looking for a non-existent path: `~/work/SupplyChainSystem/SupplyChainSystem/apps/web/apps/web`
+  - The issue was caused by Vercel incorrectly combining the working-directory with the project path
+- Fixed GitHub Actions Fly.io deployment:
+  - Corrected the usage of superfly/flyctl-actions/setup-flyctl action
+  - Separated the setup and deployment steps
+  - Fixed the rollback procedure to use flyctl directly
+  - Removed invalid 'args' parameter that was causing warnings
 - Fixed Fly.io application type detection:
   - Added explicit NestJS configuration to fly.toml files
   - Created .fly/launch.toml files for both production and staging
