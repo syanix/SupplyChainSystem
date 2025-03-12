@@ -58,11 +58,14 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        roles: [user.role.toLowerCase()],
+        name: user.name,
+        role: user.role,
         tenantId: userTenantId,
-        tenantName: tenant?.name || "Unknown",
+      },
+      tenant: {
+        id: tenant?.id,
+        name: tenant?.name,
+        slug: tenant?.slug,
       },
       accessToken: this.jwtService.sign(payload),
     };
@@ -123,11 +126,14 @@ export class AuthService {
       user: {
         id: newUser.id,
         email: newUser.email,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        roles: [newUser.role.toLowerCase()],
+        name: newUser.name,
+        role: newUser.role,
         tenantId: userTenantId,
-        tenantName: tenant?.name || "Unknown",
+      },
+      tenant: {
+        id: tenant?.id,
+        name: tenant?.name,
+        slug: tenant?.slug,
       },
       accessToken: this.jwtService.sign(payload),
     };
