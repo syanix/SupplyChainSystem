@@ -35,10 +35,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Build packages first to ensure types are available
-      - name: Build packages
-        run: npm run build:packages
-
       - name: Type check
         run: npm run type-check
 
@@ -48,31 +44,13 @@ jobs:
       - name: Check formatting
         run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
 
-  test:
-    needs: code-quality
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Build depedency
+        run: npm run build:packages
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      # Build packages first to ensure types are available
-      - name: Build packages
+      - name: Build
         run: npm run build
 
-      - name: Run tests
-        run: npm run test
-
   deploy-production:
-    needs: test
     runs-on: ubuntu-latest
     environment: production
     steps:
@@ -129,12 +107,3 @@ jobs:
           git checkout HEAD~1
           # Redeploy
           npm run deploy
-
-      - name: Send Slack notification
-        uses: 8398a7/action-slack@v3
-        with:
-          status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: always()

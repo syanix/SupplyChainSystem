@@ -19,6 +19,11 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Added Vercel deployment configuration:
+  - Created `vercel.json` with custom build command for the monorepo setup
+  - Added security headers for enhanced application security
+  - Disabled automatic GitHub deployments to align with our manual deployment workflow
+  - Created `.vercelignore` to optimize deployment by excluding unnecessary files
 - Further optimized CI/CD workflow:
   - Streamlined code commit process to only run the `check` script (lint + type-check + format)
   - Kept full build and test process for pull requests

@@ -1,5 +1,5 @@
 app = "supply-chain-system-api"
-primary_region = "sjc"
+primary_region = "syd"
 
 [env]
   NODE_ENV = "production"
