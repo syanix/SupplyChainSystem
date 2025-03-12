@@ -19,6 +19,11 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Fixed Fly.io application type detection:
+  - Added explicit NestJS configuration to fly.toml files
+  - Created .fly/launch.toml files for both production and staging
+  - Added processes section to specify the correct start command
+  - Set builder to "dockerfile" to ensure correct build process
 - Fixed Fly.io deployment issues:
   - Created a new multi-stage Dockerfile that properly handles the monorepo structure
   - Fixed the dependency resolution for local packages (@supply-chain-system/shared)

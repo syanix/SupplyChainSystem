@@ -4,6 +4,7 @@ primary_region = "syd"
 [build]
   dockerfile = "Dockerfile"
   context = "../.."
+  builder = "dockerfile"
 
 [env]
   NODE_ENV = "staging"
@@ -22,4 +23,7 @@ primary_region = "syd"
     grace_period = "5s"
     method = "get"
     path = "/health"
-    protocol = "http" 
+    protocol = "http"
+
+[processes]
+  app = "node dist/main.js" 
