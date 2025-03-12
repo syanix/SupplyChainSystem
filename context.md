@@ -19,6 +19,9 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Fixed GitHub Actions formatting check:
+  - Updated all Prettier commands to use `npx prettier` instead of direct `prettier` calls
+  - This resolves the "command not found" error in GitHub Actions
 - Improved code quality checks:
   - Updated the `check` script to directly include Prettier format checking alongside linting and type checking
   - Maintained the `format` script for writing formatting changes

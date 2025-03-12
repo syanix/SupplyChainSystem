@@ -34,7 +34,7 @@ jobs:
         run: npm run lint
 
       - name: Check formatting
-        run: prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
+        run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
 
   test:
     needs: code-quality
