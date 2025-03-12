@@ -19,6 +19,11 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Fixed GitHub Actions build errors related to TypeScript type checking:
+  - Updated the build sequence to ensure shared packages are built before type checking
+  - Added a new `build:packages` script to build only the shared packages
+  - Modified the `type-check` task in turbo.json to depend on the `build` task
+  - Standardized Node.js version to 20.x across all GitHub workflows
 - Fixed pre-commit hook configuration to properly handle file paths:
   - Updated lint-staged configuration to use eslint and prettier directly instead of through turbo
   - This resolves issues with file paths being passed to turbo commands

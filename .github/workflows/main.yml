@@ -17,11 +17,15 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 23.9
+          node-version: 20
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
+
+      # Build packages first to ensure types are available
+      - name: Build packages
+        run: npm run build:packages
 
       - name: Type check
         run: npm run type-check
@@ -48,11 +52,12 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm run test
-
+      # Build packages first to ensure types are available
       - name: Build packages
         run: npm run build
+
+      - name: Run tests
+        run: npm run test
 
   deploy-staging:
     needs: test

@@ -127,7 +127,7 @@ The project follows a monorepo structure with the following main directories:
 
 ### Prerequisites
 
-- Node.js 18.x or higher
+- Node.js 20.x or higher
 - npm 10.x or higher
 - Docker and Docker Compose (for PostgreSQL)
 
@@ -206,9 +206,19 @@ The project follows a monorepo structure with the following main directories:
 
 - `npm run dev` - Start all applications in development mode
 - `npm run build` - Build all applications
+- `npm run build:packages` - Build only the shared packages (ui, shared, database)
 - `npm run start` - Start all applications in production mode
 - `npm run lint` - Run linting on all applications
+- `npm run type-check` - Run type checking on all applications
 - `npm run test` - Run tests on all applications
+
+### Build Sequence
+
+The project uses Turborepo to manage the build sequence. The build sequence is configured in the `turbo.json` file. The key points to note are:
+
+1. Shared packages (`@supply-chain-system/ui`, `@supply-chain-system/shared`, `@supply-chain-system/database`) must be built before the applications.
+2. The `type-check` task depends on the `build` task of the shared packages.
+3. When running type checking in CI/CD, always run `npm run build:packages` first to ensure the shared packages are built.
 
 ### UI Component Library
 

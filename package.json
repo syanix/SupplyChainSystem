@@ -12,6 +12,7 @@
     "dev:web": "turbo run dev --filter=@supply-chain-system/web",
     "dev:api": "turbo run start:dev --filter=api",
     "build": "turbo run build",
+    "build:packages": "turbo run build --filter=\"@supply-chain-system/shared\" --filter=\"@supply-chain-system/ui\" --filter=\"@supply-chain-system/database\"",
     "start": "turbo run start",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint:fix",
