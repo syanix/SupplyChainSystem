@@ -28,11 +28,11 @@ export class CreateUserDto {
   @ApiProperty({
     example: "STAFF",
     description: "The role of the user",
-    enum: ["ADMIN", "MANAGER", "STAFF"],
+    enum: ["SUPER_ADMIN", "ADMIN", "MANAGER", "STAFF"],
     default: "STAFF",
   })
-  @IsIn(["ADMIN", "MANAGER", "STAFF"], {
-    message: "Role must be one of: ADMIN, MANAGER, STAFF",
+  @IsIn(["SUPER_ADMIN", "ADMIN", "MANAGER", "STAFF"], {
+    message: "Role must be one of: SUPER_ADMIN, ADMIN, MANAGER, STAFF",
   })
   role: string;
 

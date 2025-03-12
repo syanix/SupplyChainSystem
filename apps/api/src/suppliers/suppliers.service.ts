@@ -9,6 +9,7 @@ import { Supplier } from "./entities/supplier.entity";
 import { SupplierContact } from "./entities/supplier-contact.entity";
 import { CreateSupplierDto } from "./dto/create-supplier.dto";
 import { UpdateSupplierDto } from "./dto/update-supplier.dto";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class SuppliersService {
@@ -29,11 +30,17 @@ export class SuppliersService {
     await queryRunner.startTransaction();
 
     try {
-      // Create the supplier
+      // Get current timestamp
+      const now = new Date();
+
+      // Create the supplier with explicit UUID and timestamps
       const supplier = queryRunner.manager.create(Supplier, {
+        id: uuidv4(), // Explicitly generate a UUID
         ...createSupplierDto,
         tenantId,
         contacts: [],
+        createdAt: now,
+        updatedAt: now,
       });
 
       // Save the supplier to get an ID
@@ -43,8 +50,11 @@ export class SuppliersService {
       if (createSupplierDto.contacts && createSupplierDto.contacts.length > 0) {
         for (const contactDto of createSupplierDto.contacts) {
           const contact = queryRunner.manager.create(SupplierContact, {
+            id: uuidv4(), // Explicitly generate a UUID for each contact
             ...contactDto,
             supplierId: savedSupplier.id,
+            createdAt: now,
+            updatedAt: now,
           });
 
           await queryRunner.manager.save(contact);
@@ -126,10 +136,14 @@ export class SuppliersService {
       // Find the supplier
       const supplier = await this.findOne(id, tenantId);
 
+      // Get current timestamp
+      const now = new Date();
+
       // Update supplier properties
       const updatedSupplier = {
         ...supplier,
         ...updateSupplierDto,
+        updatedAt: now,
       };
 
       // Remove contacts property if it exists to avoid TypeORM issues
@@ -149,8 +163,11 @@ export class SuppliersService {
         // Add new contacts
         for (const contactDto of updateSupplierDto.contacts) {
           const contact = queryRunner.manager.create(SupplierContact, {
+            id: uuidv4(), // Explicitly generate a UUID for each contact
             ...contactDto,
             supplierId: id,
+            createdAt: now,
+            updatedAt: now,
           });
 
           await queryRunner.manager.save(contact);

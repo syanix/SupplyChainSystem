@@ -10,6 +10,7 @@ export interface Product {
   imageUrl?: string;
   isActive: boolean;
   tenantId: string;
+  supplierId: string;
   category?: string;
   attributes?: Record<string, any>;
   createdAt: Date;

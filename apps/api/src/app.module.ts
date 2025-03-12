@@ -9,6 +9,7 @@ import { TenantsModule } from "./tenants/tenants.module";
 import { DatabaseModule } from "./database/database.module";
 import { ConfigModule, ConfigService, ThrottlerModule } from "./nestjs-modules";
 import { TypeOrmModule } from "@nestjs/typeorm";
+import { AdminModule } from "./admin/admin.module";
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { TypeOrmModule } from "@nestjs/typeorm";
     ProductsModule,
     TenantsModule,
     DatabaseModule,
+    AdminModule,
   ],
 })
 export class AppModule {
@@ -69,6 +71,7 @@ export class AppModule {
         { path: "auth/login", method: RequestMethod.POST },
         { path: "auth/register", method: RequestMethod.POST },
         { path: "tenants", method: RequestMethod.POST },
+        { path: "admin/(.*)", method: RequestMethod.ALL },
       )
       .forRoutes("*");
   }

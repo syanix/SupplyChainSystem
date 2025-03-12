@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  UnauthorizedException,
+  BadRequestException,
 } from "@nestjs/common";
 import {
   ApiTags,
@@ -17,8 +19,10 @@ import {
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
+import { ChangePasswordDto } from "./dto/change-password.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { GetUser } from "../common/decorators/get-user.decorator";
+import * as bcrypt from "bcrypt";
 
 @ApiTags("users")
 @Controller("users")
@@ -45,6 +49,67 @@ export class UsersController {
   @ApiResponse({ status: 200, description: "Users retrieved successfully" })
   findAll(@GetUser("tenantId") tenantId: string) {
     return this.usersService.findAll(tenantId);
+  }
+
+  @Get("profile/me")
+  @ApiOperation({ summary: "Get current user profile" })
+  @ApiResponse({ status: 200, description: "Profile retrieved successfully" })
+  async getProfile(@GetUser("id") userId: string) {
+    // Get user with tenant relation
+    return this.usersService.findOneWithTenant(userId);
+  }
+
+  @Patch("profile")
+  @ApiOperation({ summary: "Update current user profile" })
+  @ApiResponse({ status: 200, description: "Profile updated successfully" })
+  @ApiResponse({ status: 404, description: "User not found" })
+  updateProfile(
+    @GetUser("id") userId: string,
+    @Body() updateUserDto: UpdateUserDto,
+    @GetUser("tenantId") tenantId: string,
+  ) {
+    // Ensure the tenant ID cannot be changed
+    if (updateUserDto.tenantId) {
+      updateUserDto.tenantId = tenantId;
+    }
+    return this.usersService.update(userId, updateUserDto);
+  }
+
+  @Post("change-password")
+  @ApiOperation({ summary: "Change user password" })
+  @ApiResponse({ status: 200, description: "Password changed successfully" })
+  @ApiResponse({ status: 401, description: "Current password is incorrect" })
+  @ApiResponse({ status: 400, description: "Invalid password format" })
+  async changePassword(
+    @GetUser("id") userId: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    const user = await this.usersService.findOne(userId);
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password || "",
+    );
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException("Current password is incorrect");
+    }
+
+    // Validate new password (you can add more validation rules)
+    if (changePasswordDto.newPassword.length < 6) {
+      throw new BadRequestException(
+        "New password must be at least 6 characters long",
+      );
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+    // Update user with new password
+    await this.usersService.update(userId, { password: hashedPassword });
+
+    return { message: "Password changed successfully" };
   }
 
   @Get(":id")

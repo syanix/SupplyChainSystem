@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ProductForm from '../../components/ProductForm';
 import { Product } from '@/types/product';
+import { useSession } from 'next-auth/react';
 
 // Client component that uses hooks
 function EditProductClient({ id }: { id: string }) {
+  const { data: session } = useSession();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,7 +19,7 @@ function EditProductClient({ id }: { id: string }) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${session?.accessToken}`,
           },
         });
 
@@ -34,8 +36,10 @@ function EditProductClient({ id }: { id: string }) {
       }
     };
 
-    fetchProduct();
-  }, [id]);
+    if (session?.accessToken) {
+      fetchProduct();
+    }
+  }, [id, session?.accessToken]);
 
   if (loading) {
     return <div className="p-4">Loading product details...</div>;

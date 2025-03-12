@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from "typeorm";
 import { Tenant } from "../../tenants/entities/tenant.entity";
+import { Supplier } from "../../suppliers/entities/supplier.entity";
 
 @Entity("products")
 export class Product {
@@ -47,6 +48,13 @@ export class Product {
   @ManyToOne(() => Tenant)
   @JoinColumn({ name: "tenantId" })
   tenant: Tenant;
+
+  @Column("uuid")
+  supplierId: string;
+
+  @ManyToOne(() => Supplier)
+  @JoinColumn({ name: "supplierId" })
+  supplier: Supplier;
 
   @Column({ nullable: true })
   category: string;

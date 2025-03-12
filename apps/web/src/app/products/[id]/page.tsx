@@ -4,10 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Product } from '@/types/product';
+import { useSession } from 'next-auth/react';
 
 // Client component that uses hooks
 function ProductDetailClient({ id }: { id: string }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,7 +20,7 @@ function ProductDetailClient({ id }: { id: string }) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${session?.accessToken}`,
           },
         });
 
@@ -35,8 +37,10 @@ function ProductDetailClient({ id }: { id: string }) {
       }
     };
 
-    fetchProduct();
-  }, [id]);
+    if (session?.accessToken) {
+      fetchProduct();
+    }
+  }, [id, session?.accessToken]);
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this product?')) {
@@ -44,7 +48,7 @@ function ProductDetailClient({ id }: { id: string }) {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
           method: 'DELETE',
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+            Authorization: `Bearer ${session?.accessToken}`,
           },
         });
 

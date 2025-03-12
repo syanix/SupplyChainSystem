@@ -13,7 +13,7 @@ import {
   Alert,
 } from '@supply-chain-system/ui';
 import Link from 'next/link';
-import { useSession } from 'next-auth/react';
+import { useSession, signOut } from 'next-auth/react';
 
 interface DashboardStats {
   orders: number;
@@ -29,6 +29,11 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Debug session data
+    console.log('Session data:', session);
+    console.log('Session user:', session?.user);
+    console.log('App context user:', user);
+
     // Redirect to login if not authenticated
     if (!isLoading && !session) {
       router.push('/auth/login');
@@ -59,21 +64,29 @@ export default function DashboardPage() {
     );
   }
 
-  const handleLogout = () => {
-    // Clear user context and redirect to login
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('tenant');
+  const handleLogout = async () => {
+    // Use NextAuth's signOut function
+    await signOut({ redirect: false });
     router.push('/auth/login');
   };
 
+  // Ensure we're passing the role correctly to the Layout component
+  const userData = {
+    name: session.user?.name,
+    email: session.user?.email,
+    role: session.user?.role || user?.role,
+  };
+
+  console.log('User data being passed to Layout:', userData);
+
   return (
-    <Layout user={session.user} onLogout={handleLogout}>
+    <Layout user={userData} onLogout={handleLogout}>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="text-gray-600 mt-2">
           Welcome back, {session.user?.name || session.user?.email}!
         </p>
+        {userData.role && <p className="text-gray-500 mt-1">Role: {userData.role}</p>}
       </div>
 
       {error && (

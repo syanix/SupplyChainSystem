@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Product } from '@/types/product';
+import { Supplier } from '@/types/supplier';
+import { useSession } from 'next-auth/react';
 
 interface ProductFormProps {
   product?: Product;
@@ -11,6 +13,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ product, isEditing = false }: ProductFormProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -21,11 +24,42 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
     barcode: '',
     imageUrl: '',
     isActive: true,
+    supplierId: '',
     category: '',
     attributes: {},
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [loadingSuppliers, setLoadingSuppliers] = useState(true);
+
+  // Fetch suppliers
+  useEffect(() => {
+    const fetchSuppliers = async () => {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers`, {
+          headers: {
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch suppliers');
+        }
+
+        const data = await response.json();
+        setSuppliers(data);
+      } catch (err) {
+        console.error('Error fetching suppliers:', err);
+      } finally {
+        setLoadingSuppliers(false);
+      }
+    };
+
+    if (session?.accessToken) {
+      fetchSuppliers();
+    }
+  }, [session?.accessToken]);
 
   useEffect(() => {
     if (product && isEditing) {
@@ -39,6 +73,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
         barcode: product.barcode || '',
         imageUrl: product.imageUrl || '',
         isActive: product.isActive,
+        supplierId: product.supplierId || '',
         category: product.category || '',
         attributes: product.attributes || {},
       });
@@ -76,7 +111,7 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
         method,
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+          Authorization: `Bearer ${session?.accessToken}`,
         },
         body: JSON.stringify(formData),
       });
@@ -117,6 +152,31 @@ export default function ProductForm({ product, isEditing = false }: ProductFormP
             required
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
           />
+        </div>
+
+        <div className="col-span-2">
+          <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700">
+            Supplier *
+          </label>
+          <select
+            id="supplierId"
+            name="supplierId"
+            value={formData.supplierId}
+            onChange={handleChange}
+            required
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Select a supplier</option>
+            {loadingSuppliers ? (
+              <option disabled>Loading suppliers...</option>
+            ) : (
+              suppliers.map(supplier => (
+                <option key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </option>
+              ))
+            )}
+          </select>
         </div>
 
         <div className="col-span-2">

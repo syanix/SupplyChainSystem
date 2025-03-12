@@ -4,6 +4,7 @@ import { Repository } from "typeorm";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Product } from "./entities/product.entity";
+import { v4 as uuidv4 } from "uuid";
 
 @Injectable()
 export class ProductsService {
@@ -17,6 +18,7 @@ export class ProductsService {
     tenantId: string,
   ): Promise<Product> {
     const product = this.productRepository.create({
+      id: uuidv4(),
       ...createProductDto,
       tenantId,
     });

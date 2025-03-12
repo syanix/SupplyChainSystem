@@ -5,6 +5,7 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
 } from "class-validator";
 
 export class CreateProductDto {
@@ -60,6 +61,11 @@ export class CreateProductDto {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean = true;
+
+  @ApiProperty({ description: "ID of the supplier for this product" })
+  @IsUUID()
+  @IsNotEmpty()
+  supplierId: string;
 
   @ApiPropertyOptional({ description: "Category of the product" })
   @IsString()
