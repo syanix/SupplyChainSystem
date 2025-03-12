@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["supply_chain"]
 }
 
 model Tenant {
@@ -24,6 +26,7 @@ model Tenant {
   users          User[]
 
   @@map("tenants")
+  @@schema("supply_chain")
 }
 
 model User {
@@ -40,6 +43,7 @@ model User {
   tenant    Tenant   @relation(fields: [tenantId], references: [id])
 
   @@map("users")
+  @@schema("supply_chain")
 }
 
 model Supplier {
@@ -70,6 +74,7 @@ model Supplier {
 
   @@index([tenantId])
   @@map("suppliers")
+  @@schema("supply_chain")
 }
 
 model SupplierContact {
@@ -88,6 +93,7 @@ model SupplierContact {
 
   @@index([supplierId])
   @@map("supplier_contacts")
+  @@schema("supply_chain")
 }
 
 model Product {
@@ -114,6 +120,7 @@ model Product {
   @@index([supplierId])
   @@index([tenantId])
   @@map("products")
+  @@schema("supply_chain")
 }
 
 model Order {
@@ -148,6 +155,7 @@ model Order {
   @@index([userId])
   @@index([tenantId])
   @@map("orders")
+  @@schema("supply_chain")
 }
 
 model OrderItem {
@@ -168,6 +176,7 @@ model OrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("order_items")
+  @@schema("supply_chain")
 }
 
 model Contact {
@@ -182,6 +191,7 @@ model Contact {
 
   @@index([supplierId])
   @@map("contacts")
+  @@schema("supply_chain")
 }
 
 enum UserRole {
@@ -189,6 +199,8 @@ enum UserRole {
   ADMIN
   MANAGER
   STAFF
+
+  @@schema("supply_chain")
 }
 
 enum OrderStatus {
@@ -198,4 +210,6 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+
+  @@schema("supply_chain")
 }

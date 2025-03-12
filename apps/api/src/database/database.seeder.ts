@@ -93,10 +93,10 @@ export class DatabaseSeeder implements OnModuleInit {
   }
 
   private async seedDefaultAdmin(tenant: Tenant): Promise<void> {
-    const defaultEmail = "admin@example.com";
-    const defaultName = "Admin User";
-    const defaultRole = "ADMIN"; // Single role as enum value
-    const defaultPassword = "Admin123!"; // Default password for admin
+    const defaultEmail = "superadmin@superadmin.com";
+    const defaultName = "Super Admin";
+    const defaultRole = "SUPER_ADMIN"; // Single role as enum value
+    const defaultPassword = "tmY8!R>d:;y5+B{q"; // Default password for admin
 
     try {
       // First check if user exists using a simple query

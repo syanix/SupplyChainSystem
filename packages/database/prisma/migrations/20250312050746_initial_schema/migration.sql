@@ -1,11 +1,14 @@
--- CreateEnum
-CREATE TYPE "UserRole" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'STAFF');
+-- CreateSchema
+CREATE SCHEMA IF NOT EXISTS "supply_chain";
 
 -- CreateEnum
-CREATE TYPE "OrderStatus" AS ENUM ('DRAFT', 'PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED');
+CREATE TYPE "supply_chain"."UserRole" AS ENUM ('SUPER_ADMIN', 'ADMIN', 'MANAGER', 'STAFF');
+
+-- CreateEnum
+CREATE TYPE "supply_chain"."OrderStatus" AS ENUM ('DRAFT', 'PENDING', 'CONFIRMED', 'SHIPPED', 'DELIVERED', 'CANCELLED');
 
 -- CreateTable
-CREATE TABLE "tenants" (
+CREATE TABLE "supply_chain"."tenants" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
@@ -21,12 +24,12 @@ CREATE TABLE "tenants" (
 );
 
 -- CreateTable
-CREATE TABLE "users" (
+CREATE TABLE "supply_chain"."users" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "password" TEXT,
-    "role" "UserRole" NOT NULL DEFAULT 'STAFF',
+    "role" "supply_chain"."UserRole" NOT NULL DEFAULT 'STAFF',
     "tenantId" TEXT NOT NULL,
     "isActive" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -36,7 +39,7 @@ CREATE TABLE "users" (
 );
 
 -- CreateTable
-CREATE TABLE "suppliers" (
+CREATE TABLE "supply_chain"."suppliers" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -61,7 +64,7 @@ CREATE TABLE "suppliers" (
 );
 
 -- CreateTable
-CREATE TABLE "supplier_contacts" (
+CREATE TABLE "supply_chain"."supplier_contacts" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "position" TEXT,
@@ -78,7 +81,7 @@ CREATE TABLE "supplier_contacts" (
 );
 
 -- CreateTable
-CREATE TABLE "products" (
+CREATE TABLE "supply_chain"."products" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
@@ -100,7 +103,7 @@ CREATE TABLE "products" (
 );
 
 -- CreateTable
-CREATE TABLE "orders" (
+CREATE TABLE "supply_chain"."orders" (
     "id" TEXT NOT NULL,
     "orderNumber" TEXT NOT NULL,
     "status" TEXT NOT NULL,
@@ -128,7 +131,7 @@ CREATE TABLE "orders" (
 );
 
 -- CreateTable
-CREATE TABLE "order_items" (
+CREATE TABLE "supply_chain"."order_items" (
     "id" TEXT NOT NULL,
     "orderId" TEXT NOT NULL,
     "productId" TEXT NOT NULL,
@@ -145,7 +148,7 @@ CREATE TABLE "order_items" (
 );
 
 -- CreateTable
-CREATE TABLE "contacts" (
+CREATE TABLE "supply_chain"."contacts" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -158,79 +161,79 @@ CREATE TABLE "contacts" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tenants_name_key" ON "tenants"("name");
+CREATE UNIQUE INDEX "tenants_name_key" ON "supply_chain"."tenants"("name");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "tenants_slug_key" ON "tenants"("slug");
+CREATE UNIQUE INDEX "tenants_slug_key" ON "supply_chain"."tenants"("slug");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+CREATE UNIQUE INDEX "users_email_key" ON "supply_chain"."users"("email");
 
 -- CreateIndex
-CREATE INDEX "suppliers_tenantId_idx" ON "suppliers"("tenantId");
+CREATE INDEX "suppliers_tenantId_idx" ON "supply_chain"."suppliers"("tenantId");
 
 -- CreateIndex
-CREATE INDEX "supplier_contacts_supplierId_idx" ON "supplier_contacts"("supplierId");
+CREATE INDEX "supplier_contacts_supplierId_idx" ON "supply_chain"."supplier_contacts"("supplierId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "products_sku_key" ON "products"("sku");
+CREATE UNIQUE INDEX "products_sku_key" ON "supply_chain"."products"("sku");
 
 -- CreateIndex
-CREATE INDEX "products_supplierId_idx" ON "products"("supplierId");
+CREATE INDEX "products_supplierId_idx" ON "supply_chain"."products"("supplierId");
 
 -- CreateIndex
-CREATE INDEX "products_tenantId_idx" ON "products"("tenantId");
+CREATE INDEX "products_tenantId_idx" ON "supply_chain"."products"("tenantId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "orders_orderNumber_key" ON "orders"("orderNumber");
+CREATE UNIQUE INDEX "orders_orderNumber_key" ON "supply_chain"."orders"("orderNumber");
 
 -- CreateIndex
-CREATE INDEX "orders_supplierId_idx" ON "orders"("supplierId");
+CREATE INDEX "orders_supplierId_idx" ON "supply_chain"."orders"("supplierId");
 
 -- CreateIndex
-CREATE INDEX "orders_userId_idx" ON "orders"("userId");
+CREATE INDEX "orders_userId_idx" ON "supply_chain"."orders"("userId");
 
 -- CreateIndex
-CREATE INDEX "orders_tenantId_idx" ON "orders"("tenantId");
+CREATE INDEX "orders_tenantId_idx" ON "supply_chain"."orders"("tenantId");
 
 -- CreateIndex
-CREATE INDEX "order_items_orderId_idx" ON "order_items"("orderId");
+CREATE INDEX "order_items_orderId_idx" ON "supply_chain"."order_items"("orderId");
 
 -- CreateIndex
-CREATE INDEX "order_items_productId_idx" ON "order_items"("productId");
+CREATE INDEX "order_items_productId_idx" ON "supply_chain"."order_items"("productId");
 
 -- CreateIndex
-CREATE INDEX "contacts_supplierId_idx" ON "contacts"("supplierId");
+CREATE INDEX "contacts_supplierId_idx" ON "supply_chain"."contacts"("supplierId");
 
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tenants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."users" ADD CONSTRAINT "users_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "supply_chain"."tenants"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "suppliers" ADD CONSTRAINT "suppliers_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."suppliers" ADD CONSTRAINT "suppliers_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "supply_chain"."tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "supplier_contacts" ADD CONSTRAINT "supplier_contacts_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."supplier_contacts" ADD CONSTRAINT "supplier_contacts_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "supply_chain"."suppliers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."products" ADD CONSTRAINT "products_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "supply_chain"."suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "products" ADD CONSTRAINT "products_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."products" ADD CONSTRAINT "products_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "supply_chain"."tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "orders" ADD CONSTRAINT "orders_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."orders" ADD CONSTRAINT "orders_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "supply_chain"."suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "orders" ADD CONSTRAINT "orders_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."orders" ADD CONSTRAINT "orders_tenantId_fkey" FOREIGN KEY ("tenantId") REFERENCES "supply_chain"."tenants"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "orders" ADD CONSTRAINT "orders_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."orders" ADD CONSTRAINT "orders_userId_fkey" FOREIGN KEY ("userId") REFERENCES "supply_chain"."users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."order_items" ADD CONSTRAINT "order_items_orderId_fkey" FOREIGN KEY ("orderId") REFERENCES "supply_chain"."orders"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "order_items" ADD CONSTRAINT "order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."order_items" ADD CONSTRAINT "order_items_productId_fkey" FOREIGN KEY ("productId") REFERENCES "supply_chain"."products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "contacts" ADD CONSTRAINT "contacts_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "supply_chain"."contacts" ADD CONSTRAINT "contacts_supplierId_fkey" FOREIGN KEY ("supplierId") REFERENCES "supply_chain"."suppliers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
