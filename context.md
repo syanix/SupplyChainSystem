@@ -19,6 +19,16 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Enhanced API dependency management:
+  - Updated API package.json to ensure shared packages are built first
+  - Added a build:deps script that builds all shared packages
+  - Modified all API scripts to run build:deps when needed
+  - This ensures proper dependency order during development and deployment
+- Improved Fly.io deployment configuration:
+  - Created a multi-stage Dockerfile for the API application
+  - Updated fly.toml and fly.staging.toml to use the Dockerfile
+  - Configured the build process to build shared packages first
+  - Added .dockerignore to optimize Docker builds
 - Added Vercel deployment configuration:
   - Created `vercel.json` with custom build command for the monorepo setup
   - Added security headers for enhanced application security
