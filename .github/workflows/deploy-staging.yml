@@ -44,14 +44,8 @@ jobs:
       - name: Check formatting
         run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
 
-      # Build packages first to ensure types are available
-      - name: Build depedency
-        run: npm run build:packages
-
-      - name: Build
-        run: npm run build
-
   deploy-staging:
+    needs: code-quality
     runs-on: ubuntu-latest
     environment: staging
     steps:
@@ -66,6 +60,13 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+        # Build packages first to ensure types are available
+      - name: Build depedency
+        run: npm run build:packages
+
+      - name: Build
+        run: npm run build
 
       - name: Deploy API to Fly.io (Staging)
         uses: superfly/flyctl-actions/setup-flyctl@master
