@@ -19,6 +19,14 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Fixed GitHub Pages deployment permissions:
+  - Added explicit `permissions` section to the deployment dashboard workflow
+  - Granted `contents: write` and `pages: write` permissions to the GITHUB_TOKEN
+  - This resolves the 403 error when trying to push to the gh-pages branch
+- Fixed Fly.io build configuration conflicts:
+  - Removed redundant `.fly/launch.toml` files that were causing build detection conflicts
+  - Added `processes = ["app"]` to the `[http_service]` section in both `fly.toml` and `fly.staging.toml`
+  - This resolves the "more than one build configuration found" error and properly links services to processes
 - Further fixed Vercel deployment configuration:
   - Removed `alias-domains` parameter from GitHub Actions workflow
   - This parameter should only be added once you have domains set up and ready to use

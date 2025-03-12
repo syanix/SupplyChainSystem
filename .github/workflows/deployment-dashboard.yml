@@ -6,6 +6,11 @@ on:
     types:
       - completed
 
+# Add permissions for the GITHUB_TOKEN
+permissions:
+  contents: write
+  pages: write
+
 jobs:
   update-dashboard:
     runs-on: ubuntu-latest
