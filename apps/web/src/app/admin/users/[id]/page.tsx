@@ -21,7 +21,17 @@ interface User {
   updatedAt: string;
 }
 
-export default function UserDetailsPage({ params }: { params: { id: string } }) {
+// Convert to a server component to properly handle params as a Promise
+export default async function UserDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  // Resolve the params Promise to get the actual id
+  const resolvedParams = await params;
+  const userId = resolvedParams.id;
+
+  return <UserDetailsClient userId={userId} />;
+}
+
+// Create a client component that takes the resolved userId
+function UserDetailsClient({ userId }: { userId: string }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [user, setUser] = useState<User | null>(null);
@@ -47,15 +57,12 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
 
     const fetchUser = async () => {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${params.id}`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${session?.accessToken}`,
-            },
-          }
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch user');
@@ -73,7 +80,7 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
     if (session?.accessToken) {
       fetchUser();
     }
-  }, [session, status, router, params.id]);
+  }, [session, status, router, userId]);
 
   const handleDelete = async () => {
     if (!session?.accessToken) {
@@ -85,15 +92,12 @@ export default function UserDetailsPage({ params }: { params: { id: string } }) 
       window.confirm('Are you sure you want to delete this user? This action cannot be undone.')
     ) {
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${params.id}`,
-          {
-            method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          }
-        );
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${session.accessToken}`,
+          },
+        });
 
         if (!response.ok) {
           throw new Error('Failed to delete user');

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Layout } from '@supply-chain-system/ui';
@@ -19,11 +19,17 @@ interface User {
   isActive: boolean;
 }
 
-interface PageParams {
-  id: string;
+// Convert to a server component to properly handle params as a Promise
+export default async function EditUserPage({ params }: { params: Promise<{ id: string }> }) {
+  // Resolve the params Promise to get the actual id
+  const resolvedParams = await params;
+  const userId = resolvedParams.id;
+
+  return <EditUserClient userId={userId} />;
 }
 
-export default function EditUserPage({ params }: { params: PageParams }) {
+// Create a client component that takes the resolved userId
+function EditUserClient({ userId }: { userId: string }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
@@ -39,10 +45,6 @@ export default function EditUserPage({ params }: { params: PageParams }) {
     password: '',
   });
   const [passwordError, setPasswordError] = useState<string | null>(null);
-
-  // Properly unwrap params using use() from React
-  const resolvedParams = use(params as any) as PageParams;
-  const userId = resolvedParams.id;
 
   useEffect(() => {
     // Redirect to login if not authenticated

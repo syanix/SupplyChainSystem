@@ -6,13 +6,13 @@ const nextConfig = {
     '@supply-chain-system/database',
   ],
   reactStrictMode: true,
-  // Temporarily disable TypeScript checking during build
+  // TypeScript checking is enabled for proper type safety
   typescript: {
     // !! WARN !!
     // Dangerously allow production builds to successfully complete even if
     // your project has type errors.
     // !! WARN !!
-    ignoreBuildErrors: true,
+    //ignoreBuildErrors: true,
   },
 };
 

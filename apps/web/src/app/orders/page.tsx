@@ -153,7 +153,7 @@ export default function OrdersPage() {
   ];
 
   return (
-    <Layout user={session.user} tenant={session.tenant} onLogout={handleLogout}>
+    <Layout user={session.user} onLogout={handleLogout}>
       <Breadcrumb
         items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Orders' }]}
         className="mb-4"

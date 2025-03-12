@@ -139,7 +139,7 @@ function OrderDetailClient({ id }: { id: string }) {
 
   if (loading) {
     return (
-      <Layout user={session.user} tenant={session.tenant} onLogout={handleLogout}>
+      <Layout user={session.user} onLogout={handleLogout}>
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
         </div>
@@ -149,7 +149,7 @@ function OrderDetailClient({ id }: { id: string }) {
 
   if (error || !order) {
     return (
-      <Layout user={session.user} tenant={session.tenant} onLogout={handleLogout}>
+      <Layout user={session.user} onLogout={handleLogout}>
         <Alert variant="error" title="Error" className="mb-6" onClose={() => setError(null)}>
           {error || 'Order not found'}
         </Alert>
@@ -187,7 +187,7 @@ function OrderDetailClient({ id }: { id: string }) {
   ];
 
   return (
-    <Layout user={session.user} tenant={session.tenant} onLogout={handleLogout}>
+    <Layout user={session.user} onLogout={handleLogout}>
       <Breadcrumb
         items={[
           { label: 'Dashboard', href: '/dashboard' },
@@ -286,7 +286,11 @@ type OrderDetailPageProps = {
   }>;
 };
 
+// Server component that handles params as a Promise
 export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
-  const { id } = await params;
+  // Resolve the params Promise to get the actual id
+  const resolvedParams = await params;
+  const id = resolvedParams.id;
+
   return <OrderDetailClient id={id} />;
 }

@@ -2,10 +2,11 @@
 
 ## High Priority
 
-- [ ] Fix TypeScript type issues with Next.js 15 page params
-  - In Next.js 15, page params are now a Promise, but our client components are using them synchronously
-  - Need to update all client components to properly handle Promise-based params or create proper type definitions
-  - Currently, TypeScript checking is disabled during build as a temporary solution
+- [x] Fix TypeScript type issues with Next.js 15 page params
+  - [x] Created proper type definitions for Next.js 15 page props
+  - [x] Updated client components to use the correct type definitions
+  - [x] Fixed TypeScript checking by converting client components to use server components for params handling
+  - [x] Removed invalid tenant prop from Layout component usage
 
 ## Medium Priority
 
