@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Layout } from '@supply-chain-system/ui';
@@ -19,7 +19,11 @@ interface User {
   isActive: boolean;
 }
 
-export default function EditUserPage({ params }: { params: { id: string } }) {
+interface PageParams {
+  id: string;
+}
+
+export default function EditUserPage({ params }: { params: PageParams }) {
   const router = useRouter();
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(true);
@@ -33,6 +37,10 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     tenantId: '',
     isActive: true,
   });
+
+  // Properly unwrap params using use() from React
+  const resolvedParams = use(params as any) as PageParams;
+  const userId = resolvedParams.id;
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -55,7 +63,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
       try {
         // Fetch user data
         const userResponse = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${params.id}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`,
           {
             headers: {
               'Content-Type': 'application/json',
@@ -103,7 +111,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     if (session?.accessToken) {
       fetchData();
     }
-  }, [session, status, router, params.id]);
+  }, [session, status, router, userId]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -122,7 +130,7 @@ export default function EditUserPage({ params }: { params: { id: string } }) {
     setError(null);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${params.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/users/${userId}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -24,10 +24,17 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException("Invalid token");
     }
 
+    // Get the main role (first one in the array or default to empty string)
+    const mainRole =
+      Array.isArray(payload.roles) && payload.roles.length > 0
+        ? payload.roles[0].toUpperCase()
+        : "";
+
     return {
       id: payload.sub,
       email: payload.email,
       roles: payload.roles,
+      role: mainRole, // Add single role property for backward compatibility
       tenantId: payload.tenantId,
       tenantName: payload.tenantName,
     };

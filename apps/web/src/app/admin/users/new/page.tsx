@@ -25,6 +25,7 @@ export default function NewUserPage() {
     tenantId: '',
     isActive: true,
   });
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     // Redirect to login if not authenticated
@@ -73,6 +74,25 @@ export default function NewUserPage() {
     }
   }, [session, status, router]);
 
+  const validatePassword = (password: string): string | null => {
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters long';
+    }
+    if (!/(?=.*[a-z])/.test(password)) {
+      return 'Password must contain at least one lowercase letter';
+    }
+    if (!/(?=.*[A-Z])/.test(password)) {
+      return 'Password must contain at least one uppercase letter';
+    }
+    if (!/(?=.*\d)/.test(password)) {
+      return 'Password must contain at least one number';
+    }
+    if (!/(?=.*[@$!%*?&])/.test(password)) {
+      return 'Password must contain at least one special character (@$!%*?&)';
+    }
+    return null;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
@@ -81,11 +101,24 @@ export default function NewUserPage() {
       setFormData(prev => ({ ...prev, [name]: target.checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+
+      // Validate password
+      if (name === 'password') {
+        setPasswordError(validatePassword(value));
+      }
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate password before submission
+    const passwordValidationError = validatePassword(formData.password);
+    if (passwordValidationError) {
+      setPasswordError(passwordValidationError);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -170,14 +203,16 @@ export default function NewUserPage() {
               Password
             </label>
             <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              className={`shadow appearance-none border ${passwordError ? 'border-red-500' : ''} rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline`}
               id="password"
               type="password"
               name="password"
               value={formData.password}
               onChange={handleChange}
               required
+              placeholder="Min 6 chars, with uppercase, lowercase, number, and special char"
             />
+            {passwordError && <p className="text-red-500 text-xs italic">{passwordError}</p>}
           </div>
 
           <div className="mb-4">

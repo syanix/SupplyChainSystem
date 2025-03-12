@@ -1,5 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsNotEmpty, MinLength, IsUUID, IsIn } from "class-validator";
+import {
+  IsEmail,
+  IsNotEmpty,
+  MinLength,
+  IsUUID,
+  IsIn,
+  IsOptional,
+  IsBoolean,
+  Matches,
+} from "class-validator";
 
 export class CreateUserDto {
   @ApiProperty({
@@ -11,11 +20,22 @@ export class CreateUserDto {
   email: string;
 
   @ApiProperty({
-    example: "password123",
-    description: "The password of the user",
+    example: "Password123!",
+    description:
+      "The password of the user (min 6 chars, must include uppercase, lowercase, number, and special character)",
   })
   @IsNotEmpty({ message: "Password is required" })
   @MinLength(6, { message: "Password must be at least 6 characters long" })
+  @Matches(/(?=.*[a-z])/, {
+    message: "Password must contain at least one lowercase letter",
+  })
+  @Matches(/(?=.*[A-Z])/, {
+    message: "Password must contain at least one uppercase letter",
+  })
+  @Matches(/(?=.*\d)/, { message: "Password must contain at least one number" })
+  @Matches(/(?=.*[@$!%*?&])/, {
+    message: "Password must contain at least one special character (@$!%*?&)",
+  })
   password: string;
 
   @ApiProperty({
@@ -43,4 +63,14 @@ export class CreateUserDto {
   @IsNotEmpty({ message: "Tenant ID is required" })
   @IsUUID(4, { message: "Tenant ID must be a valid UUID" })
   tenantId: string;
+
+  @ApiProperty({
+    example: true,
+    description: "Whether the user is active",
+    required: false,
+    default: true,
+  })
+  @IsOptional()
+  @IsBoolean({ message: "isActive must be a boolean" })
+  isActive?: boolean;
 }

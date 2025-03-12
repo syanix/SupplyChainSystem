@@ -10,14 +10,16 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "composite": true,
+    "composite": false,
     "declarationMap": true,
     "sourceMap": true,
     "baseUrl": ".",
     "paths": {
       "@supply-chain-system/*": ["../*/src"]
-    }
+    },
+    "importHelpers": false,
+    "noEmitHelpers": false
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/types/**/*"],
   "exclude": ["node_modules", "dist"]
 } 
