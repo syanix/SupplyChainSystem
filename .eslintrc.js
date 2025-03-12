@@ -10,7 +10,7 @@ module.exports = {
   ],
   env: {
     node: true,
-    commonjs: true
+    commonjs: true,
   },
   rules: {
     "@typescript-eslint/explicit-module-boundary-types": "off",
@@ -18,4 +18,4 @@ module.exports = {
     "import/no-unresolved": "error",
   },
   ignorePatterns: ["node_modules", "dist", ".turbo", ".next"],
-} 
+};

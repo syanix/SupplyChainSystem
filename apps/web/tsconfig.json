@@ -3,12 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ],
-      "shared": [
-        "../../packages/shared/src"
-      ]
+      "@/*": ["./src/*"],
+      "shared": ["../../packages/shared/src"]
     },
     "noEmit": true,
     "plugins": [
@@ -25,7 +21,5 @@
     ".next/types/**/*.ts",
     ".eslintrc.js"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

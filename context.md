@@ -19,6 +19,10 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Improved code quality checks:
+  - Updated the `check` script to directly include Prettier format checking alongside linting and type checking
+  - Maintained the `format` script for writing formatting changes
+  - Updated GitHub Actions workflow to use Prettier directly for format checking
 - Fixed GitHub Actions build errors related to TypeScript type checking:
   - Updated the build sequence to ensure shared packages are built before type checking
   - Added a new `build:packages` script to build only the shared packages
