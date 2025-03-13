@@ -1,0 +1,24 @@
+# Disallow all web crawlers from indexing the entire site
+User-agent: *
+Disallow: /
+
+# Explicitly disallow all bots
+User-agent: Googlebot
+Disallow: /
+User-agent: Bingbot
+Disallow: /
+User-agent: Slurp
+Disallow: /
+User-agent: DuckDuckBot
+Disallow: /
+User-agent: Baiduspider
+Disallow: /
+User-agent: YandexBot
+Disallow: /
+User-agent: Sogou
+Disallow: /
+User-agent: ia_archiver
+Disallow: /
+
+# Prevent indexing of all file types
+Sitemap: none

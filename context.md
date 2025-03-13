@@ -1,6 +1,13 @@
 # Supply Chain System Project Context
 
-This document tracks the progress and context of the Supply Chain System project.
+This document provides a high-level overview of the Supply Chain System project. For detailed information about specific domains, please refer to the following specialized context files:
+
+- [Web Frontend Context](./context-web.md) - Next.js frontend application details
+- [API Context](./context-api.md) - NestJS backend API details
+- [Database Context](./context-database.md) - Database schema, migrations, and Prisma ORM details
+- [UI Components Context](./context-ui.md) - Shared UI component library details
+- [Shared Code Context](./context-shared.md) - Shared utilities, types, and business logic
+- [CI/CD Context](./context-cicd.md) - Deployment pipelines, environments, and infrastructure
 
 ## Project Overview
 
@@ -19,125 +26,7 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
-- Updated GitHub Actions artifact actions:
-  - Upgraded actions/upload-artifact from v3 to v4
-  - Upgraded actions/download-artifact from v3 to v4
-  - Fixed "Missing download info" error in GitHub Actions workflow
-- Separated build and deploy processes:
-  - Created a dedicated build workflow that runs on push to main and on-demand
-  - Build workflow creates deployment artifacts and uploads them to GitHub
-  - Deployment workflows download artifacts and deploy them to environments
-  - Added ability to specify which build to deploy via build ID
-  - This improves reliability and allows for promoting the same build across environments
-- Fixed Fly.io deployment with pre-built artifacts:
-  - Updated the deployment process to create a complete deployment directory
-  - Added node_modules copying to ensure all dependencies are available
-  - Created a custom fly.toml file directly in the deployment directory
-  - Simplified the deployment command to use the local configuration
-  - Fixed the Dockerfile to correctly reference the pre-built artifacts
-- Implemented pre-built artifacts deployment strategy:
-  - Modified Dockerfile to use pre-built artifacts instead of building during deployment
-  - Updated GitHub Actions workflows to build once and deploy the artifacts
-  - Added `--prebuilt` flag to Vercel deployments
-  - This improves deployment speed and consistency across environments
-- Created Fly.io applications:
-  - Installed Fly.io CLI locally
-  - Created `supply-chain-system-api` for production
-  - Created `supply-chain-system-api-staging` for staging
-  - This resolves the "Could not find App" error during deployment
-- Fixed GitHub Pages deployment permissions:
-  - Added explicit `permissions` section to the deployment dashboard workflow
-  - Granted `contents: write` and `pages: write` permissions to the GITHUB_TOKEN
-  - This resolves the 403 error when trying to push to the gh-pages branch
-- Fixed Fly.io build configuration conflicts:
-  - Removed redundant `.fly/launch.toml` files that were causing build detection conflicts
-  - Added `processes = ["app"]` to the `[http_service]` section in both `fly.toml` and `fly.staging.toml`
-  - This resolves the "more than one build configuration found" error and properly links services to processes
-- Further fixed Vercel deployment configuration:
-  - Removed `alias-domains` parameter from GitHub Actions workflow
-  - This parameter should only be added once you have domains set up and ready to use
-  - Keeping the `root-directory: .` parameter to ensure correct path resolution
-- Fixed Vercel deployment path issues:
-  - Added `root-directory: .` parameter to the Vercel GitHub Action configuration
-  - This resolves the error where Vercel was looking for a non-existent path: `~/work/SupplyChainSystem/SupplyChainSystem/apps/web/apps/web`
-  - The issue was caused by Vercel incorrectly combining the working-directory with the project path
-- Fixed GitHub Actions Fly.io deployment:
-  - Corrected the usage of superfly/flyctl-actions/setup-flyctl action
-  - Separated the setup and deployment steps
-  - Fixed the rollback procedure to use flyctl directly
-  - Removed invalid 'args' parameter that was causing warnings
-- Fixed Fly.io application type detection:
-  - Added explicit NestJS configuration to fly.toml files
-  - Created .fly/launch.toml files for both production and staging
-  - Added processes section to specify the correct start command
-  - Set builder to "dockerfile" to ensure correct build process
-- Fixed Fly.io deployment issues:
-  - Created a new multi-stage Dockerfile that properly handles the monorepo structure
-  - Fixed the dependency resolution for local packages (@supply-chain-system/shared)
-  - Added proper .dockerignore files at both root and app levels
-  - Ensured shared packages are built before the API in the Docker build process
-  - Updated fly.toml files with proper build context pointing to the monorepo root
-- Enhanced API dependency management:
-  - Updated API package.json to ensure shared packages are built first
-  - Added a build:deps script that builds all shared packages
-  - Modified all API scripts to run build:deps when needed
-  - This ensures proper dependency order during development and deployment
-- Improved Fly.io deployment configuration:
-  - Updated fly.toml and fly.staging.toml to use the Dockerfile
-  - Configured the build process to build shared packages first
-  - Added .dockerignore to optimize Docker builds
-- Added Vercel deployment configuration:
-  - Created `vercel.json` with custom build command for the monorepo setup
-  - Added security headers for enhanced application security
-  - Disabled automatic GitHub deployments to align with our manual deployment workflow
-  - Created `.vercelignore` to optimize deployment by excluding unnecessary files
-- Further optimized CI/CD workflow:
-  - Streamlined code commit process to only run the `check` script (lint + type-check + format)
-  - Kept full build and test process for pull requests
-  - This improves CI performance for regular commits while maintaining thorough checks for PRs
-- Improved CI/CD workflow:
-  - Separated code quality checks from deployment workflows
-  - Made staging and production deployments manually triggered via workflow_dispatch
-  - Added confirmation step for deployments to prevent accidental deployments
-  - Created separate workflow files for staging and production deployments
-- Fixed GitHub Actions formatting check:
-  - Updated all Prettier commands to use `npx prettier` instead of direct `prettier` calls
-  - This resolves the "command not found" error in GitHub Actions
-- Improved code quality checks:
-  - Updated the `check` script to directly include Prettier format checking alongside linting and type checking
-  - Maintained the `format` script for writing formatting changes
-  - Updated GitHub Actions workflow to use Prettier directly for format checking
-- Fixed GitHub Actions build errors related to TypeScript type checking:
-  - Updated the build sequence to ensure shared packages are built before type checking
-  - Added a new `build:packages` script to build only the shared packages
-  - Modified the `type-check` task in turbo.json to depend on the `build` task
-  - Standardized Node.js version to 20.x across all GitHub workflows
-- Fixed pre-commit hook configuration to properly handle file paths:
-  - Updated lint-staged configuration to use eslint and prettier directly instead of through turbo
-  - This resolves issues with file paths being passed to turbo commands
-- Fixed TypeScript issues with Next.js 15 page params by:
-  - Converting client components to use server components for params handling
-  - Properly handling params as Promises in server components
-  - Removing invalid tenant prop from Layout component usage
-- Fixed user role handling in the admin section
-- Updated the `UpdateUserDto` to include the `isActive` field
-- Corrected the field name from `active` to `isActive` in the user entity
-- Set up CI/CD workflows for automated testing and deployment
-- Created deployment configurations for Fly.io (staging and production)
-- Implemented pre-commit hooks for code quality checks (linting, formatting, TypeScript)
-- Added dedicated GitHub workflow for pull request code quality validation
-- Created proper type definitions for Next.js 15 page params
-
-### CI/CD Setup
-
-- Implemented GitHub Actions workflows for:
-  - Main CI/CD pipeline (testing, staging deployment, production deployment)
-  - Database migrations workflow
-  - Deployment dashboard
-  - Pull request code quality checks
-- Created Fly.io configuration files for staging and production environments
-- Added comprehensive documentation for the CI/CD setup
-- Set up pre-commit hooks using Husky and lint-staged
+See the domain-specific context files for detailed recent changes in each area.
 
 ## Next Steps
 
@@ -157,18 +46,7 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ## Known Issues
 
-- Fly.io deployment issues:
-  - Missing NestJS dependencies in the Docker build process
-  - Need to update the Dockerfile to install all required NestJS packages
-  - Current error: "Cannot find module '@nestjs/typeorm' or its corresponding type declarations"
-- Need to ensure proper tenant isolation in all database queries
-- Need to optimize database performance for large datasets
-- Need to implement comprehensive error handling throughout the application
-- Several ESLint warnings need to be addressed:
-  - Async client components (should be converted to use the pattern we implemented)
-  - Missing React Hook dependencies
-  - Usage of `<img>` elements instead of Next.js `<Image />` components
-  - Explicit `any` types that should be replaced with more specific types
+See the domain-specific context files for detailed known issues in each area.
 
 ## Dependencies
 
