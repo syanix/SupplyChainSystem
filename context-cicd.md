@@ -56,6 +56,34 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Fly.io Standard Build Configuration (2023-11-25)
+
+We've transitioned from a custom Dockerfile to Fly.io's standard build process:
+
+1. **Change**: Replaced the custom Dockerfile-based build with Fly.io's standard buildpacks and removed the Dockerfile entirely.
+
+2. **Configuration Updates**:
+
+   - Added `builder = "heroku/buildpacks:20"` and `buildpacks = ["heroku/nodejs"]` to use Node.js buildpacks
+   - Set `app = "npm run start:prod"` to use the correct start command
+   - Added GitHub integration settings to enable direct deployments from the Syanix GitHub organization
+   - Configured rolling deployment strategy for zero-downtime updates
+   - Added custom build command `npm run build:all` to handle monorepo dependencies
+   - Enabled monorepo support with `enable_monorepo = true` in the experimental section
+   - Set `PROJECT_PATH = "apps/api"` to specify the API project within the monorepo
+   - Removed the Dockerfile as it's no longer needed with the buildpack approach
+
+3. **Benefits**:
+   - Simplified build process that follows platform standards
+   - Automatic dependency installation and build optimization
+   - Direct GitHub integration for streamlined deployments
+   - Reduced maintenance overhead for build configurations
+   - Proper handling of monorepo package dependencies
+   - Automatic rollback capability for failed deployments
+   - Cleaner repository without redundant Docker configuration
+
+This change leverages Fly.io's native capabilities for building and deploying Node.js applications, eliminating the need for custom Docker configuration while maintaining the same functionality.
+
 ### Fly.io Process Command Format Update (2023-11-24)
 
 We've further refined the Fly.io process command format to resolve persistent issues:

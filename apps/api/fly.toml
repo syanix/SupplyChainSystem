@@ -2,11 +2,21 @@ app = "supply-chain-system-api"
 primary_region = "syd"
 
 [build]
-  dockerfile = "Dockerfile"
+  builder = "heroku/buildpacks:20"
+  buildpacks = ["heroku/nodejs"]
+  [build.args]
+    NODE_VERSION = "20"
+    BUILD_COMMAND = "npm run build:all"
+    PROJECT_PATH = "apps/api"
+
+[deploy]
+  release_command = "npm run migration:run"
+  strategy = "rolling"
 
 [env]
   NODE_ENV = "production"
   PORT = "3001"
+  NPM_CONFIG_PRODUCTION = "true"
 
 [http_service]
   internal_port = 3001
@@ -25,4 +35,14 @@ primary_region = "syd"
     protocol = "http"
 
 [processes]
-  app = "cd /app/apps/api && node dist/main" 
+  app = "npm run start:prod"
+
+[deploy.github]
+  enabled = true
+  repo = "syanix/SupplyChainSystem"
+  branch = "main"
+  auto_deploy = false
+
+[experimental]
+  enable_monorepo = true
+  auto_rollback = true 
