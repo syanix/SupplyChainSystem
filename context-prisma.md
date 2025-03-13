@@ -593,7 +593,11 @@ We've made several improvements to the deployment process to ensure that all req
    - Development dependencies are excluded
    - The node_modules structure is optimized for the deployment environment
 
-2. **Prisma Client**: We now explicitly copy the Prisma schema and generated client to ensure that Prisma can function correctly in the deployment environment.
+2. **Prisma Client**: We now explicitly copy the Prisma schema and generate the Prisma client during the build process. This ensures that:
+
+   - The Prisma client is properly generated for the deployment environment
+   - The `@prisma/client` is initialized correctly
+   - No runtime errors occur due to missing Prisma client
 
 3. **Correct File Paths**: We've updated the file paths in the Dockerfile and fly.toml to use the correct path for the main.js file, ensuring that the application starts properly.
 
@@ -601,4 +605,6 @@ We've made several improvements to the deployment process to ensure that all req
 
 5. **Husky Removal**: We now remove the husky prepare script from the package.json file before installing dependencies. This prevents errors when running npm ci in a non-git environment, as husky tries to install git hooks.
 
-These changes resolve issues with missing dependencies like `@nestjs/config` and ensure that the application can start correctly in the Fly.io environment.
+6. **OpenSSL for Prisma**: We've added OpenSSL to the Dockerfile to ensure that Prisma can function correctly in the Alpine Linux environment.
+
+These changes resolve issues with missing dependencies like `@prisma/client` and ensure that the application can start correctly in the Fly.io environment.

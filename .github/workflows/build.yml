@@ -69,21 +69,26 @@ jobs:
 
           # Install production dependencies
           npm ci --omit=dev --no-optional
-          cd ..
 
           # Copy packages dist folders
-          cp -r packages/database/dist/* api-artifact/packages/database/dist/
-          cp -r packages/shared/dist/* api-artifact/packages/shared/dist/
-          cp -r packages/ui/dist/* api-artifact/packages/ui/dist/
+          cp -r ../packages/database/dist/* packages/database/dist/
+          cp -r ../packages/shared/dist/* packages/shared/dist/
+          cp -r ../packages/ui/dist/* packages/ui/dist/
 
-          # Copy Prisma schema and generated client
-          cp -r packages/database/prisma/* api-artifact/packages/database/prisma/
+          # Copy Prisma schema and generate client
+          cp -r ../packages/database/prisma/* packages/database/prisma/
+          cd packages/database
+          npx prisma generate
+          cd ../..
 
           # Create a simple Dockerfile
-          cat > api-artifact/Dockerfile << EOL
+          cat > Dockerfile << EOL
           FROM node:20-alpine
 
           WORKDIR /app
+
+          # Install OpenSSL for Prisma
+          RUN apk add --no-cache openssl
 
           # Copy package files and pre-built artifacts
           COPY . .
@@ -99,7 +104,7 @@ jobs:
           EOL
 
           # Create a README
-          cat > api-artifact/README.md << EOL
+          cat > README.md << EOL
           # API Deployment Package
 
           This package contains pre-built artifacts for the Supply Chain System API.
@@ -117,6 +122,7 @@ jobs:
              \`\`\`
           EOL
 
+          cd ..
           # Create a compressed tarball
           tar -czf api-artifact.tar.gz -C api-artifact .
 

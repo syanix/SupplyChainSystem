@@ -20,10 +20,11 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - API artifact now includes production-only dependencies installed with `npm ci --omit=dev`
    - Husky prepare script is removed to prevent git hook installation errors
    - Packages are now included with their dist folders and necessary files
-   - Prisma schema and generated client are explicitly included
+   - Prisma schema is copied and client is generated during the build process
    - Proper directory structure is created before copying files
    - Simplified the directory structure for easier deployment
    - Correct file paths are used in all configuration files
+   - OpenSSL is added to the Dockerfile for Prisma compatibility
 
 4. **Simplified Dockerfile**:
 
