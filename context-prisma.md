@@ -597,4 +597,6 @@ We've made several improvements to the deployment process to ensure that all req
 
 3. **Correct File Paths**: We've updated the file paths in the Dockerfile and fly.toml to use the correct path for the main.js file, ensuring that the application starts properly.
 
+4. **Directory Structure**: We've improved the directory creation process to ensure all necessary directories exist before copying files. This prevents errors like "Not a directory" when copying files to nested paths.
+
 These changes resolve issues with missing dependencies like `@nestjs/config` and ensure that the application can start correctly in the Fly.io environment.

@@ -20,6 +20,7 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - API artifact now includes production-only dependencies installed with `npm ci --production`
    - Packages are now included with their dist folders and necessary files
    - Prisma schema and generated client are explicitly included
+   - Proper directory structure is created before copying files
    - Simplified the directory structure for easier deployment
    - Correct file paths are used in all configuration files
 

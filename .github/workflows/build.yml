@@ -45,8 +45,12 @@ jobs:
       # Package API project
       - name: Package API project
         run: |
+          # Create directory structure
           mkdir -p api-artifact/apps/api
-          mkdir -p api-artifact/packages
+          mkdir -p api-artifact/packages/database/dist
+          mkdir -p api-artifact/packages/database/prisma
+          mkdir -p api-artifact/packages/shared/dist
+          mkdir -p api-artifact/packages/ui/dist
 
           # Copy API dist folder
           cp -r apps/api/dist api-artifact/apps/api/
@@ -64,12 +68,12 @@ jobs:
           cd ..
 
           # Copy packages dist folders
-          cp -r packages/database/dist api-artifact/packages/database/
-          cp -r packages/shared/dist api-artifact/packages/shared/
-          cp -r packages/ui/dist api-artifact/packages/ui/
+          cp -r packages/database/dist/* api-artifact/packages/database/dist/
+          cp -r packages/shared/dist/* api-artifact/packages/shared/dist/
+          cp -r packages/ui/dist/* api-artifact/packages/ui/dist/
 
           # Copy Prisma schema and generated client
-          cp -r packages/database/prisma api-artifact/packages/database/
+          cp -r packages/database/prisma/* api-artifact/packages/database/prisma/
 
           # Create a simple Dockerfile
           cat > api-artifact/Dockerfile << EOL
