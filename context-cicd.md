@@ -56,6 +56,26 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Security Enhancement: Credentials Management (2023-11-17)
+
+We've implemented a critical security improvement in how we handle sensitive credentials:
+
+1. **GitHub Secrets**: Moved all sensitive credentials (database URLs, JWT secrets) from hardcoded values in workflow files to GitHub Secrets.
+
+2. **Environment-Specific Secrets**: Created separate secrets for production and staging environments:
+
+   - `PRODUCTION_DATABASE_URL` and `STAGING_DATABASE_URL`
+   - `PRODUCTION_JWT_SECRET` and `STAGING_JWT_SECRET`
+
+3. **Secret Injection**: These secrets are now injected into the Fly.io configuration during the build process.
+
+This change significantly improves our security posture by:
+
+- Preventing credential exposure in the repository
+- Limiting access to sensitive information
+- Following security best practices for CI/CD pipelines
+- Enabling easier credential rotation without code changes
+
 ### Improved Package Lock Handling (2023-11-16)
 
 We've enhanced our build and deployment processes to better handle package-lock.json mismatches:
