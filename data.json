@@ -1,1 +1,1 @@
-{"last_deployment": "Thu Mar 13 01:46:41 UTC 2025", "status": "success", "commit": "update to copy the correrct node_modules"}
+{"last_deployment": "Thu Mar 13 02:06:19 UTC 2025", "status": "success", "commit": "remove husky from ci build"}
