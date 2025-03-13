@@ -164,13 +164,6 @@ jobs:
           echo "Deploying API to Fly.io staging environment..."
           cd deploy-api
 
-          # Decompress node_modules if compressed archive exists
-          if [ -f "node_modules.tar.gz" ]; then
-            echo "Decompressing node_modules..."
-            tar -xzf node_modules.tar.gz
-            rm node_modules.tar.gz
-          fi
-
           # Create the directory structure expected by the Dockerfile
           mkdir -p apps/api
           mkdir -p packages/database

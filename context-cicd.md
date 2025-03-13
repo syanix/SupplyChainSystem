@@ -56,6 +56,11 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Fixed NestJS dependency issues in Fly.io deployment:
+  - Completely redesigned the Dockerfile to install dependencies during build
+  - Now properly includes all NestJS dependencies including @nestjs/config
+  - Removed the node_modules compression/decompression steps
+  - This resolves the "Cannot find module '@nestjs/config'" error
 - Fixed deployment artifact creation issues:
   - Removed husky git hooks from deployment package
   - Modified Node.js version requirements to be compatible with CI environment
