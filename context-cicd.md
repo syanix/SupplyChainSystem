@@ -56,6 +56,22 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Environment Variable Handling (2023-11-20)
+
+We've clarified how environment variables are handled in our deployment process:
+
+1. **Build-Time Variable Substitution**: GitHub Actions automatically substitutes secret references like `${{ secrets.PRODUCTION_DATABASE_URL }}` with their actual values during the build process:
+
+   - The correct environment variables are embedded in the Fly.io configuration files during build
+   - No additional substitution is needed during deployment
+
+2. **Secure Credential Management**: Environment-specific credentials are stored as GitHub Secrets:
+   - `PRODUCTION_DATABASE_URL` and `STAGING_DATABASE_URL` for database connections
+   - `PRODUCTION_JWT_SECRET` and `STAGING_JWT_SECRET` for JWT authentication
+   - `FLY_API_TOKEN` for Fly.io authentication
+
+This approach ensures that our application has access to the correct environment variables during runtime while maintaining security best practices.
+
 ### Workflow Permissions Update (2023-11-19)
 
 We've updated the permissions configuration in our deployment workflows to address the "Resource not accessible by integration" error:
@@ -66,10 +82,15 @@ We've updated the permissions configuration in our deployment workflows to addre
    - `deploy-api.yml` and `deploy-web.yml`: Added `actions: read` permission to access artifacts
 
 2. **Personal Access Token Fallback**: Added support for using a Personal Access Token (PAT) as a fallback:
+
    - The workflows now check for a `PAT_TOKEN` secret before falling back to the default `GITHUB_TOKEN`
    - This provides flexibility when the default token doesn't have sufficient permissions
 
-These changes ensure that our workflows have the necessary permissions to access artifacts and trigger other workflows, resolving the "Resource not accessible by integration" error.
+3. **Fly.io Authentication**: Added Fly.io API token authentication to the API deployment workflow:
+   - The workflow now uses the `FLY_API_TOKEN` secret for authentication with Fly.io
+   - This resolves the "No access token available" error during deployment
+
+These changes ensure that our workflows have the necessary permissions and authentication to access artifacts, trigger other workflows, and deploy to our hosting platforms.
 
 ### Multi-Stage Deployment Workflows (2023-11-18)
 
