@@ -52,6 +52,11 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Fixed GitHub Actions artifact download permissions:
+  - Added explicit `permissions` block with `actions: read` permission
+  - Switched from `dawidd6/action-download-artifact@v2` to official `actions/download-artifact@v3`
+  - Added `github-token` parameter to artifact download steps
+  - This resolves the "Resource not accessible by integration" error
 - Updated GitHub Actions artifact actions:
   - Upgraded actions/upload-artifact from v3 to v4
   - Upgraded actions/download-artifact from v3 to v4
