@@ -25,4 +25,4 @@ primary_region = "syd"
     protocol = "http"
 
 [processes]
-  app = "node dist/main" 
+  app = "cd /app/apps/api && node dist/main" 
