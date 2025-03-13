@@ -8,4 +8,4 @@
   },
   "include": ["prisma/**/*"],
   "exclude": ["node_modules", "dist"]
-} 
+}

@@ -25,7 +25,7 @@ export interface OrderItem extends BaseOrderItem {
   id: string;
   orderId: string;
   totalPrice: number;
-  product?: any; // TODO: Replace with proper Product type
+  product?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,10 +1,5 @@
 import { z } from "zod";
-import {
-  BaseProduct,
-  Product,
-  CreateProductRequest,
-  UpdateProductRequest,
-} from "../types";
+import { Product, CreateProductRequest, UpdateProductRequest } from "../types";
 
 /**
  * Zod schema for base product

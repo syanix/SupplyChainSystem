@@ -11,6 +11,13 @@ module.exports = {
       typescript: {
         project: './tsconfig.json',
       },
+      node: {
+        extensions: ['.js', '.jsx', '.ts', '.tsx'],
+        moduleDirectory: ['node_modules', 'src/'],
+      },
+    },
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx'],
     },
   },
   env: {
@@ -28,6 +35,7 @@ module.exports = {
     ],
     'import/no-named-as-default': 'warn',
     'prettier/prettier': 'warn',
+    'import/no-unresolved': 'off',
   },
   overrides: [
     {

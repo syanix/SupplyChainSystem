@@ -118,7 +118,7 @@ Services now use the client from the PrismaService through repository interfaces
 export class UsersService {
   constructor(
     @Inject(USER_REPOSITORY)
-    private readonly userRepository: IUserRepository
+    private readonly userRepository: IUserRepository,
   ) {}
 
   async findAll(tenantId?: string) {
