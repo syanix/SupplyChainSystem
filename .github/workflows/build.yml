@@ -1,6 +1,15 @@
-name: Build Application
+name: CI Build
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "apps/**"
+      - "packages/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig*.json"
   workflow_dispatch:
     inputs:
       description:
@@ -46,20 +55,31 @@ jobs:
           mkdir -p deploy-api/packages/database/dist
           mkdir -p deploy-api/packages/shared/dist
           mkdir -p deploy-api/packages/ui/dist
-          mkdir -p deploy-api/node_modules
 
           # Copy necessary files
           cp -r apps/api/dist/* deploy-api/apps/api/dist/
           cp -r packages/database/dist/* deploy-api/packages/database/dist/
           cp -r packages/shared/dist/* deploy-api/packages/shared/dist/
           cp -r packages/ui/dist/* deploy-api/packages/ui/dist/
-          cp -r node_modules/* deploy-api/node_modules/
+
+          # Create production-only node_modules
+          echo "Creating production-only node_modules..."
+          cp package.json package-lock.json deploy-api/
+          cd deploy-api
+          npm ci --production --omit=dev
+
+          # Compress node_modules to reduce artifact size
+          echo "Compressing node_modules..."
+          tar -czf node_modules.tar.gz node_modules
+          rm -rf node_modules
+          cd ..
+
+          # Copy remaining files
           cp apps/api/Dockerfile deploy-api/Dockerfile
           cp apps/api/package.json deploy-api/apps/api/
           cp packages/database/package.json deploy-api/packages/database/
           cp packages/shared/package.json deploy-api/packages/shared/
           cp packages/ui/package.json deploy-api/packages/ui/
-          cp package.json deploy-api/
 
           # Create production fly.toml
           cat > deploy-api/fly.production.toml << EOL
@@ -148,10 +168,9 @@ jobs:
           \`\`\`
           EOL
 
-          # Zip the deployment package
-          cd deploy-api
-          zip -r ../api-deployment.zip .
-          cd ..
+          # Create a compressed tarball instead of zip
+          echo "Creating compressed API deployment package..."
+          tar -czf api-deployment.tar.gz -C deploy-api .
 
       # Prepare Web deployment artifacts
       - name: Prepare Web deployment artifacts
@@ -177,17 +196,16 @@ jobs:
           \`\`\`
           EOL
 
-          # Zip the deployment package
-          cd deploy-web
-          zip -r ../web-deployment.zip .
-          cd ..
+          # Create a compressed tarball instead of zip
+          echo "Creating compressed Web deployment package..."
+          tar -czf web-deployment.tar.gz -C deploy-web .
 
       # Upload API deployment artifact
       - name: Upload API deployment artifact
         uses: actions/upload-artifact@v4
         with:
           name: api-deployment
-          path: api-deployment.zip
+          path: api-deployment.tar.gz
           retention-days: 7
 
       # Upload Web deployment artifact
@@ -195,7 +213,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web-deployment
-          path: web-deployment.zip
+          path: web-deployment.tar.gz
           retention-days: 7
 
       # Create a build info file with metadata

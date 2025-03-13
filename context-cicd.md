@@ -18,9 +18,10 @@ The CI/CD pipeline automates testing, building, and deployment of the Supply Cha
 
 ### Build Workflow
 
-The build workflow is manually triggered via `workflow_dispatch`. It:
+The CI Build workflow is triggered automatically on code commits to the main branch and can also be manually triggered via `workflow_dispatch`. It:
 
-- Accepts an optional description parameter for the build
+- Runs automatically when changes are made to relevant files (apps, packages, config files)
+- Accepts an optional description parameter for manual builds
 - Performs code quality checks (linting, type checking, formatting)
 - Builds the application and packages
 - Creates deployment artifacts
@@ -55,6 +56,30 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Enhanced artifact compression for all deployment packages:
+  - Switched from zip to tar.gz compression for all deployment artifacts
+  - Compressed entire deployment packages, not just node_modules
+  - Significantly reduces artifact sizes (typically 60-80% smaller)
+  - Improves upload/download speeds and reduces GitHub Actions storage usage
+- Optimized artifact size with compression:
+  - Now compresses node_modules with tar/gzip during build
+  - Decompresses node_modules during deployment
+  - Significantly reduces artifact size and upload/download times
+  - Improves GitHub Actions storage efficiency
+- Optimized Dockerfile to eliminate npm install:
+  - Now copies pre-built node_modules directly instead of installing dependencies
+  - Modified build workflow to create production-only node_modules
+  - Removed all package.json copying and npm install steps from Dockerfile
+  - This significantly speeds up Docker builds and eliminates npm registry dependencies
+- Optimized Dockerfile to focus only on runtime dependencies:
+  - Simplified package.json file copying
+  - Kept npm install step for runtime dependencies
+  - This maintains the minimal approach while ensuring the application has access to required modules
+- Renamed build workflow to "CI Build" and added automatic triggers:
+  - Now automatically runs on code commits to the main branch
+  - Only triggers when changes are made to relevant files (apps, packages, config files)
+  - Still maintains manual trigger option with workflow_dispatch
+  - This improves automation while keeping manual control when needed
 - Improved artifact handling in deployment workflows:
   - Added ability to specify workflow run ID containing artifacts
   - Added automatic detection of latest successful build workflow run
@@ -62,6 +87,10 @@ A workflow that runs on pull requests to:
   - Added conditional steps based on artifact availability
   - Added detailed logging for better troubleshooting
   - This resolves the "Artifact not found" errors during deployment
+- Fixed npm installation error in Docker build:
+  - Changed from `npm ci` to `npm install` in Dockerfile
+  - Added package-lock.json to deployment artifacts
+  - This resolves the "npm ci command can only install with an existing package-lock.json" error
 - Updated all GitHub Actions to latest versions:
   - Updated actions/checkout from v3 to v4
   - Updated actions/setup-node from v3 to v4

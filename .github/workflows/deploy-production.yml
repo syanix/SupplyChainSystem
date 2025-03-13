@@ -56,11 +56,11 @@ jobs:
           RUN_ID=$(echo $WORKFLOW_RUNS | jq -r '.workflow_runs[0].id')
 
           if [ "$RUN_ID" = "null" ] || [ -z "$RUN_ID" ]; then
-            echo "No successful build workflow runs found."
+            echo "No successful CI build workflow runs found."
             echo "run_id=" >> $GITHUB_OUTPUT
             exit 0
           else
-            echo "Found latest successful build workflow run: $RUN_ID"
+            echo "Found latest successful CI build workflow run: $RUN_ID"
             echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
           fi
 
@@ -136,7 +136,7 @@ jobs:
       - name: Check API artifact
         id: check_api
         run: |
-          if [ -f "api-deployment.zip" ]; then
+          if [ -f "api-deployment.tar.gz" ]; then
             echo "api_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "api_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -149,7 +149,8 @@ jobs:
         if: steps.check_api.outputs.api_artifact_exists == 'true'
         run: |
           mkdir -p deploy-api
-          unzip -o api-deployment.zip -d deploy-api
+          echo "Extracting API deployment package..."
+          tar -xzf api-deployment.tar.gz -C deploy-api
           ls -la deploy-api
 
       # Install Fly CLI
@@ -162,6 +163,13 @@ jobs:
         run: |
           echo "Deploying API to Fly.io..."
           cd deploy-api
+
+          # Decompress node_modules if compressed archive exists
+          if [ -f "node_modules.tar.gz" ]; then
+            echo "Decompressing node_modules..."
+            tar -xzf node_modules.tar.gz
+            rm node_modules.tar.gz
+          fi
 
           # Create the directory structure expected by the Dockerfile
           mkdir -p apps/api
@@ -199,7 +207,7 @@ jobs:
       - name: Check Web artifact
         id: check_web
         run: |
-          if [ -f "web-deployment.zip" ]; then
+          if [ -f "web-deployment.tar.gz" ]; then
             echo "web_artifact_exists=true" >> $GITHUB_OUTPUT
           else
             echo "web_artifact_exists=false" >> $GITHUB_OUTPUT
@@ -212,7 +220,8 @@ jobs:
         if: steps.check_web.outputs.web_artifact_exists == 'true'
         run: |
           mkdir -p deploy-web
-          unzip -o web-deployment.zip -d deploy-web
+          echo "Extracting Web deployment package..."
+          tar -xzf web-deployment.tar.gz -C deploy-web
           ls -la deploy-web
 
       # Deploy to Vercel
