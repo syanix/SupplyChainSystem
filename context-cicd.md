@@ -53,6 +53,13 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Updated all GitHub Actions to latest versions:
+  - Updated actions/checkout from v3 to v4
+  - Updated actions/setup-node from v3 to v4
+  - Updated actions/download-artifact to v4 consistently
+  - Updated superfly/flyctl-actions/setup-flyctl from master to 1.4
+  - Updated amondnet/vercel-action from v20 to v25
+  - This ensures compatibility with the latest GitHub Actions runner (2.322.0)
 - Changed build workflow to manual trigger only:
   - Removed automatic trigger on push to main branch
   - Added optional description input parameter

@@ -32,7 +32,7 @@ jobs:
     environment: staging
     steps:
       - name: Checkout code for configuration
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           sparse-checkout: |
             .github
@@ -40,7 +40,7 @@ jobs:
 
       # Download build info to get the latest build ID if not specified
       - name: Download build info
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-info
           path: .
@@ -80,7 +80,7 @@ jobs:
 
       # Install Fly CLI
       - name: Setup Flyctl
-        uses: superfly/flyctl-actions/setup-flyctl@master
+        uses: superfly/flyctl-actions/setup-flyctl@1.4
 
       # Deploy to Fly.io
       - name: Deploy API to Fly.io (Staging)
@@ -107,7 +107,7 @@ jobs:
 
       # Deploy to Vercel
       - name: Deploy Web to Vercel (Staging)
-        uses: amondnet/vercel-action@v20
+        uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
