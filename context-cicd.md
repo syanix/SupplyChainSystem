@@ -56,6 +56,22 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Fly.io Process Command Fix (2023-11-22)
+
+We've fixed an issue with the Fly.io deployment process command format:
+
+1. **Issue**: The deployment was failing with the error `Error: Invalid format 'node dist/main.js'` when trying to start the application.
+
+2. **Root Cause**: Fly.io's process command format in the `[processes]` section of the `fly.toml` file was incorrectly specified with the `.js` extension.
+
+3. **Solution**: Updated both `fly.toml` and `fly.staging.toml` files to use the correct process command format:
+   ```toml
+   [processes]
+     app = "node dist/main"
+   ```
+
+This fix ensures that Fly.io can properly start the NestJS application after deployment.
+
 ### TypeORM Dependency Fix (2023-11-21)
 
 We've resolved a critical NestJS dependency injection error that was preventing the API from starting:
