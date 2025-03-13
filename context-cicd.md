@@ -56,6 +56,21 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### TypeORM Configuration Fix (2023-11-23)
+
+We've resolved the persistent NestJS dependency injection error with TypeORM:
+
+1. **Issue**: Despite previous fixes, the application was still failing with `UnknownDependenciesException: Nest can't resolve dependencies of the TypeOrmCoreModule (TypeOrmModuleOptions, ?). Please make sure that the argument ModuleRef at index [1] is available in the TypeOrmCoreModule context.`
+
+2. **Root Cause**: The issue was related to how TypeORM was being configured in NestJS v11. The `forRootAsync` method in TypeORM v11 has a different dependency structure that requires a ModuleRef that wasn't being properly provided.
+
+3. **Solution**: Simplified the TypeORM configuration by using the synchronous `forRoot` method instead of `forRootAsync`:
+   - Replaced the async configuration with a direct configuration using process.env variables
+   - Added `autoLoadEntities: true` to ensure all entities are properly registered
+   - Maintained the same SSL and synchronize settings based on environment
+
+This change eliminates the dependency on ModuleRef that was causing the injection error, allowing the application to start successfully.
+
 ### Fly.io Process Command Fix (2023-11-22)
 
 We've fixed an issue with the Fly.io deployment process command format:

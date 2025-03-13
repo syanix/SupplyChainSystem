@@ -19,19 +19,16 @@ import { AdminModule } from "./admin/admin.module";
     }),
 
     // Database
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: "postgres",
-        url: configService.get("DATABASE_URL"),
-        entities: [__dirname + "/**/*.entity{.ts,.js}"],
-        synchronize: configService.get("NODE_ENV") !== "production",
-        ssl:
-          configService.get("NODE_ENV") === "production"
-            ? { rejectUnauthorized: false }
-            : false,
-      }),
+    TypeOrmModule.forRoot({
+      type: "postgres",
+      url: process.env.DATABASE_URL,
+      entities: [__dirname + "/**/*.entity{.ts,.js}"],
+      synchronize: process.env.NODE_ENV !== "production",
+      ssl:
+        process.env.NODE_ENV === "production"
+          ? { rejectUnauthorized: false }
+          : false,
+      autoLoadEntities: true,
     }),
 
     // Rate limiting
