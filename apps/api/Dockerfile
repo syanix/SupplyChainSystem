@@ -17,7 +17,6 @@ COPY apps/api/dist/ ./apps/api/dist/
 COPY packages/database/dist/ ./packages/database/dist/
 COPY packages/shared/dist/ ./packages/shared/dist/
 COPY packages/ui/dist/ ./packages/ui/dist/
-COPY node_modules/ ./node_modules/
 
 # Set working directory to the API app
 WORKDIR /app/apps/api

@@ -160,10 +160,25 @@ jobs:
       - name: Deploy API to Fly.io (Staging)
         if: steps.check_api.outputs.api_artifact_exists == 'true'
         run: |
+          echo "Deploying API to Fly.io staging environment..."
           cd deploy-api
+
+          # Create the directory structure expected by the Dockerfile
+          mkdir -p apps/api
+          mkdir -p packages/database
+          mkdir -p packages/shared
+          mkdir -p packages/ui
+
+          # Move files to the correct locations if needed
+          if [ -d "dist" ] && [ ! -d "apps/api/dist" ]; then
+            mkdir -p apps/api/dist
+            cp -r dist/* apps/api/dist/
+          fi
+
+          # Deploy using the appropriate fly.toml
           flyctl deploy --config fly.staging.toml --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+          echo "API staging deployment completed"
 
       # Download Web deployment artifact
       - name: Download Web deployment artifact

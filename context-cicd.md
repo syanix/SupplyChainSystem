@@ -117,6 +117,16 @@ A workflow that runs on pull requests to:
 - Fixed pre-commit hook configuration to properly handle file paths:
   - Updated lint-staged configuration to use eslint and prettier directly instead of through turbo
   - This resolves issues with file paths being passed to turbo commands
+- Fixed Docker build errors in deployment:
+  - Removed unnecessary `COPY node_modules/` command from Dockerfile
+  - Added directory structure creation in deployment workflows
+  - Added conditional file movement to ensure correct paths for dist files
+  - This resolves the "not found" errors during Docker builds
+- Optimized Fly.io deployment with streamlined Dockerfile:
+  - Updated Dockerfile to use pre-built artifacts without rebuilding
+  - Removed node_modules from deployment artifacts to reduce size
+  - Configured Dockerfile to install only production dependencies
+  - This improves deployment speed and reduces resource usage on Fly.io
 
 ## Deployment Process
 
