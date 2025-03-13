@@ -96,23 +96,69 @@ jobs:
             echo "build_id=${{ steps.set_run_id.outputs.run_id }}" >> $GITHUB_OUTPUT
           fi
 
-      - name: Download API deployment artifact
+      - name: Download API artifact
         uses: actions/download-artifact@v4
         with:
-          name: api-deployment
+          name: api-artifact
           repository: ${{ github.repository }}
           run-id: ${{ steps.set_run_id.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: ./
 
-      - name: Extract API deployment artifact
+      - name: Extract API artifact
         run: |
           mkdir -p deploy-api
-          tar -xzf api-deployment.tar.gz -C deploy-api
+          tar -xzf api-artifact.tar.gz -C deploy-api
           ls -la deploy-api
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@1.4
+
+      - name: Create fly.toml
+        run: |
+          cd deploy-api
+
+          # Create appropriate fly.toml based on environment
+          if [ "${{ inputs.environment }}" == "production" ]; then
+            APP_NAME="supply-chain-system-api"
+            MIN_MACHINES=1
+            echo "Creating production fly.toml"
+          else
+            APP_NAME="supply-chain-system-api-staging"
+            MIN_MACHINES=0
+            echo "Creating staging fly.toml"
+          fi
+
+          cat > fly.toml << EOL
+          app = "${APP_NAME}"
+          primary_region = "syd"
+
+          [env]
+            NODE_ENV = "${{ inputs.environment }}"
+            PORT = "3001"
+
+          [http_service]
+            internal_port = 3001
+            force_https = true
+            auto_stop_machines = true
+            auto_start_machines = true
+            min_machines_running = ${MIN_MACHINES}
+            processes = ["app"]
+            
+            [[http_service.checks]]
+              interval = "10s"
+              timeout = "2s"
+              grace_period = "5s"
+              method = "get"
+              path = "/health"
+              protocol = "http"
+
+          [processes]
+            app = "node apps/api/dist/main"
+          EOL
+
+          echo "Created fly.toml for ${APP_NAME}"
+          cat fly.toml
 
       - name: Deploy to Fly.io
         id: deploy
@@ -121,22 +167,18 @@ jobs:
         run: |
           cd deploy-api
 
-          # Determine which config file to use based on environment
+          # Set environment-specific secrets
           if [ "${{ inputs.environment }}" == "production" ]; then
-            CONFIG_FILE="fly.production.toml"
-            echo "Deploying to production environment"
+            APP_NAME="supply-chain-system-api"
+            flyctl secrets set DATABASE_URL="${{ secrets.PRODUCTION_DATABASE_URL }}" JWT_SECRET="${{ secrets.PRODUCTION_JWT_SECRET }}" --app $APP_NAME
           else
-            CONFIG_FILE="fly.staging.toml"
-            echo "Deploying to staging environment"
+            APP_NAME="supply-chain-system-api-staging"
+            flyctl secrets set DATABASE_URL="${{ secrets.STAGING_DATABASE_URL }}" JWT_SECRET="${{ secrets.STAGING_JWT_SECRET }}" --app $APP_NAME
           fi
 
-          # Deploy using the appropriate config file
-          echo "Using config file: $CONFIG_FILE"
-          flyctl deploy --config $CONFIG_FILE --remote-only
-
-          # Get the deployed app name from the config file
-          APP_NAME=$(grep "app =" $CONFIG_FILE | cut -d '"' -f 2 || grep "app =" $CONFIG_FILE | cut -d "=" -f 2 | tr -d ' ')
-          echo "Deployed app: $APP_NAME"
+          # Deploy the application
+          echo "Deploying to $APP_NAME"
+          flyctl deploy --remote-only
 
           # Store the app name for later use
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
@@ -176,18 +218,9 @@ jobs:
 
       - name: Rollback on Failure
         if: failure() && steps.deploy.outcome == 'success'
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          cd deploy-api
-
-          # Determine which config file to use based on environment
-          if [ "${{ inputs.environment }}" == "production" ]; then
-            CONFIG_FILE="fly.production.toml"
-          else
-            CONFIG_FILE="fly.staging.toml"
-          fi
-
-          # Get the app name from the config file
-          APP_NAME=$(grep "app =" $CONFIG_FILE | cut -d '"' -f 2 || grep "app =" $CONFIG_FILE | cut -d "=" -f 2 | tr -d ' ')
-
+          APP_NAME="${{ steps.deploy.outputs.app_name }}"
           echo "Rolling back deployment for app: $APP_NAME"
           flyctl deploy rollback --app $APP_NAME

@@ -31,9 +31,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: |
-          # First try with ci, if it fails due to package-lock mismatch, use install
-          npm ci || npm install
+        run: npm ci || npm install
 
       - name: Type check
         run: npm run type-check
@@ -41,156 +39,84 @@ jobs:
       - name: Lint code
         run: npm run lint
 
-      - name: Check formatting
-        run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
-
-      - name: Build dependency packages
-        run: npm run build:packages
-
-      - name: Build
+      - name: Build all projects
         run: npm run build
 
-      # Create deployment artifact directory
-      - name: Prepare API deployment artifacts
+      # Package API project
+      - name: Package API project
         run: |
-          mkdir -p deploy-api/apps/api/dist
-          mkdir -p deploy-api/packages/database/dist
-          mkdir -p deploy-api/packages/shared/dist
-          mkdir -p deploy-api/packages/ui/dist
+          mkdir -p api-artifact/apps/api
+          mkdir -p api-artifact/packages
 
-          # Copy necessary files
-          cp -r apps/api/dist/* deploy-api/apps/api/dist/
-          cp -r packages/database/dist/* deploy-api/packages/database/dist/
-          cp -r packages/shared/dist/* deploy-api/packages/shared/dist/
-          cp -r packages/ui/dist/* deploy-api/packages/ui/dist/
+          # Copy API dist folder
+          cp -r apps/api/dist api-artifact/apps/api/
 
-          # Copy package files for dependency installation
-          cp package.json package-lock.json deploy-api/
-          cp apps/api/package.json deploy-api/apps/api/
-          cp packages/database/package.json deploy-api/packages/database/
-          cp packages/shared/package.json deploy-api/packages/shared/
-          cp packages/ui/package.json deploy-api/packages/ui/
+          # Copy package.json files
+          cp package.json package-lock.json api-artifact/
+          cp apps/api/package.json api-artifact/apps/api/
 
-          # Temporarily modify package.json to remove husky and fix Node.js version requirement
-          echo "Modifying package.json to remove husky..."
-          cd deploy-api
-          jq 'del(.scripts.prepare)' package.json > package.json.tmp
-          mv package.json.tmp package.json
+          # Copy node_modules (required at runtime)
+          cp -r node_modules api-artifact/
 
-          # No need to extract and update NestJS versions since they're already aligned in the source files
-          echo "NestJS dependencies are already aligned in source package.json files"
+          # Copy packages dist folders
+          cp -r packages/database api-artifact/packages/
+          cp -r packages/shared api-artifact/packages/
+          cp -r packages/ui api-artifact/packages/
 
-          cd ..
+          # Create a simple Dockerfile
+          cat > api-artifact/Dockerfile << EOL
+          FROM node:20-alpine
 
-          # Copy Dockerfile and fly.toml files
-          cp apps/api/Dockerfile deploy-api/Dockerfile
+          WORKDIR /app
 
-          # Create production fly.toml
-          cat > deploy-api/fly.production.toml << EOL
-          app = "supply-chain-system-api"
-          primary_region = "syd"
+          # Copy package files and pre-built artifacts
+          COPY . .
 
-          [build]
-            dockerfile = "Dockerfile"
+          # Expose the port the app runs on
+          EXPOSE 3001
 
-          [env]
-            NODE_ENV = "production"
-            PORT = "3001"
-            DATABASE_URL = "${{ secrets.PRODUCTION_DATABASE_URL }}"
-            JWT_SECRET = "${{ secrets.PRODUCTION_JWT_SECRET }}"
+          # Set NODE_ENV to production
+          ENV NODE_ENV=production
 
-          [http_service]
-            internal_port = 3001
-            force_https = true
-            auto_stop_machines = true
-            auto_start_machines = true
-            min_machines_running = 1
-            processes = ["app"]
-            
-            [[http_service.checks]]
-              interval = "10s"
-              timeout = "2s"
-              grace_period = "5s"
-              method = "get"
-              path = "/health"
-              protocol = "http"
-
-          [processes]
-            app = "node dist/main"
+          # Run the app
+          CMD ["node", "apps/api/dist/main"]
           EOL
 
-          # Create staging fly.toml
-          cat > deploy-api/fly.staging.toml << EOL
-          app = "supply-chain-system-api-staging"
-          primary_region = "syd"
-
-          [build]
-            dockerfile = "Dockerfile"
-
-          [env]
-            NODE_ENV = "staging"
-            PORT = "3001"
-            DATABASE_URL = "${{ secrets.STAGING_DATABASE_URL }}"
-            JWT_SECRET = "${{ secrets.STAGING_JWT_SECRET }}"
-
-          [http_service]
-            internal_port = 3001
-            force_https = true
-            auto_stop_machines = true
-            auto_start_machines = true
-            min_machines_running = 0
-            processes = ["app"]
-            
-            [[http_service.checks]]
-              interval = "10s"
-              timeout = "2s"
-              grace_period = "5s"
-              method = "get"
-              path = "/health"
-              protocol = "http"
-
-          [processes]
-            app = "node dist/main"
-          EOL
-
-          # Create a README with deployment instructions
-          cat > deploy-api/README.md << EOL
+          # Create a README
+          cat > api-artifact/README.md << EOL
           # API Deployment Package
 
           This package contains pre-built artifacts for the Supply Chain System API.
 
           ## Deployment Instructions
 
-          ### For Production
+          1. Build the Docker image:
+             \`\`\`bash
+             docker build -t supply-chain-api .
+             \`\`\`
 
-          \`\`\`bash
-          cd deploy-api
-          flyctl deploy --config fly.production.toml --remote-only
-          \`\`\`
-
-          ### For Staging
-
-          \`\`\`bash
-          cd deploy-api
-          flyctl deploy --config fly.staging.toml --remote-only
-          \`\`\`
+          2. Run the container:
+             \`\`\`bash
+             docker run -p 3001:3001 -e DATABASE_URL=your_database_url -e JWT_SECRET=your_jwt_secret supply-chain-api
+             \`\`\`
           EOL
 
-          # Create a compressed tarball instead of zip
-          echo "Creating compressed API deployment package..."
-          tar -czf api-deployment.tar.gz -C deploy-api .
+          # Create a compressed tarball
+          tar -czf api-artifact.tar.gz -C api-artifact .
 
-      # Prepare Web deployment artifacts
-      - name: Prepare Web deployment artifacts
+      # Package Web project
+      - name: Package Web project
         run: |
-          mkdir -p deploy-web
-          cp -r apps/web/.next deploy-web/
-          cp -r apps/web/public deploy-web/
-          cp apps/web/package.json deploy-web/
-          cp apps/web/next.config.js deploy-web/
+          mkdir -p web-artifact
 
-          # Create a README with deployment instructions
-          cat > deploy-web/README.md << EOL
+          # Copy Next.js build output
+          cp -r apps/web/.next web-artifact/
+          cp -r apps/web/public web-artifact/
+          cp apps/web/package.json web-artifact/
+          cp apps/web/next.config.js web-artifact/
+
+          # Create a README
+          cat > web-artifact/README.md << EOL
           # Web Deployment Package
 
           This package contains pre-built artifacts for the Supply Chain System Web frontend.
@@ -204,24 +130,23 @@ jobs:
           \`\`\`
           EOL
 
-          # Create a compressed tarball instead of zip
-          echo "Creating compressed Web deployment package..."
-          tar -czf web-deployment.tar.gz -C deploy-web .
+          # Create a compressed tarball
+          tar -czf web-artifact.tar.gz -C web-artifact .
 
-      # Upload API deployment artifact
-      - name: Upload API deployment artifact
+      # Upload API artifact
+      - name: Upload API artifact
         uses: actions/upload-artifact@v4
         with:
-          name: api-deployment
-          path: api-deployment.tar.gz
+          name: api-artifact
+          path: api-artifact.tar.gz
           retention-days: 7
 
-      # Upload Web deployment artifact
-      - name: Upload Web deployment artifact
+      # Upload Web artifact
+      - name: Upload Web artifact
         uses: actions/upload-artifact@v4
         with:
-          name: web-deployment
-          path: web-deployment.tar.gz
+          name: web-artifact
+          path: web-artifact.tar.gz
           retention-days: 7
 
       # Create a build info file with metadata

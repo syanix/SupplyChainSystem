@@ -547,3 +547,38 @@ By using a separate TypeScript configuration for the seed script, we can:
 3. Avoid TypeScript compilation errors during the build process
 
 This solution maintains the separation of concerns between the main source code and the database seeding functionality while ensuring both can be properly typed and compiled.
+
+## GitHub Workflow Simplification
+
+We've simplified the GitHub workflows to make them more maintainable and efficient. The following changes have been implemented:
+
+1. **Removed Deployment Workflows**:
+
+   - Removed `deploy-production.yml` and `deploy-staging.yml` files
+   - Deployment can now be handled manually or through a separate process
+
+2. **Simplified Build Workflow**:
+
+   - Streamlined the build process to focus on building all projects correctly
+   - Simplified the artifact creation process
+
+3. **Improved Artifact Packaging**:
+
+   - API artifact now includes `node_modules` for runtime dependencies
+   - Packages are now included in their entirety rather than just the dist folders
+   - Simplified the directory structure for easier deployment
+
+4. **Simplified Dockerfile**:
+
+   - Created a minimal Dockerfile that uses the default Node.js image
+   - Removed complex multi-stage build process
+   - Assumes artifacts are pre-built, focusing only on running the application
+
+5. **Improved Fly.io Deployment**:
+   - Updated `deploy-api.yml` to work with the new artifact structure
+   - Removed Dockerfile reference from fly.toml files
+   - Dynamically generates fly.toml during deployment
+   - Simplified the deployment process by using standard Fly.io features
+   - Manages secrets securely using the Fly.io CLI
+
+These changes ensure that the build process is more reliable and easier to maintain, while also making deployment more straightforward. The API artifact now includes all necessary runtime dependencies, eliminating the need for complex dependency installation during deployment.

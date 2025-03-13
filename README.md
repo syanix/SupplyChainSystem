@@ -30,6 +30,7 @@ This system is designed to help small businesses manage their supply chain opera
 - **Documentation**: Created comprehensive documentation for type strategy, linter warnings, and code organization.
 - **Code Quality**: Improved error handling, added proper validation, and ensured consistent typing across the codebase.
 - **Build Process**: Fixed TypeScript configuration for Prisma seed script to ensure proper compilation and execution.
+- **CI/CD Simplification**: Streamlined GitHub workflows, simplified Docker configuration, and improved artifact packaging for more reliable deployments.
 
 ## Quick Start
 

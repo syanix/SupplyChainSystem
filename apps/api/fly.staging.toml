@@ -1,12 +1,6 @@
 app = "supply-chain-system-api-staging"
 primary_region = "syd"
 
-[build]
-  dockerfile = "Dockerfile"
-
-[deploy]
-  strategy = "rolling"
-
 [env]
   NODE_ENV = "staging"
   PORT = "3001"
@@ -28,11 +22,5 @@ primary_region = "syd"
     path = "/health"
     protocol = "http"
 
-[experimental]
-  auto_rollback = true
-
-[deploy.github]
-  enabled = true
-  repo = "syanix/SupplyChainSystem"
-  branch = "develop"
-  auto_deploy = true 
+[processes]
+  app = "node dist/main" 
