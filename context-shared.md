@@ -46,6 +46,8 @@ This package contains database-related code that is shared between applications.
   - Added comprehensive TypeScript interfaces for all domain models
   - Improved type safety with strict null checks
   - Added documentation to all interfaces
+  - Updated Tenant interface to include all properties from the Prisma schema (description, logo, primaryColor, secondaryColor, isActive)
+  - Updated CreateTenantRequest and UpdateTenantRequest interfaces to align with the Tenant interface
 - Improved shared utilities:
   - Added date formatting utilities
   - Implemented number formatting functions

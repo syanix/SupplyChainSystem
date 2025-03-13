@@ -1,54 +1,39 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { Tenant } from "./entities/tenant.entity";
+import { Injectable, Inject } from "@nestjs/common";
 import { CreateTenantDto } from "./dto/create-tenant.dto";
 import { UpdateTenantDto } from "./dto/update-tenant.dto";
+import {
+  ITenantRepository,
+  TENANT_REPOSITORY,
+} from "./repositories/tenant.repository.interface";
 
 @Injectable()
 export class TenantsService {
   constructor(
-    @InjectRepository(Tenant)
-    private tenantsRepository: Repository<Tenant>,
+    @Inject(TENANT_REPOSITORY)
+    private readonly tenantRepository: ITenantRepository,
   ) {}
 
-  async create(createTenantDto: CreateTenantDto): Promise<Tenant> {
-    const tenant = this.tenantsRepository.create(createTenantDto);
-    return this.tenantsRepository.save(tenant);
+  async create(createTenantDto: CreateTenantDto) {
+    return this.tenantRepository.create(createTenantDto);
   }
 
-  async findAll(): Promise<Tenant[]> {
-    return this.tenantsRepository.find();
+  async findAll() {
+    return this.tenantRepository.findAll();
   }
 
-  async findOne(id: string): Promise<Tenant> {
-    const tenant = await this.tenantsRepository.findOne({ where: { id } });
-
-    if (!tenant) {
-      throw new NotFoundException(`Tenant with ID ${id} not found`);
-    }
-
-    return tenant;
+  async findOne(id: string) {
+    return this.tenantRepository.findById(id);
   }
 
-  async findByName(name: string): Promise<Tenant | null> {
-    return this.tenantsRepository.findOne({ where: { name } });
+  async findBySlug(slug: string) {
+    return this.tenantRepository.findBySlug(slug);
   }
 
-  async update(id: string, updateTenantDto: UpdateTenantDto): Promise<Tenant> {
-    const tenant = await this.findOne(id);
-
-    // Update tenant properties
-    Object.assign(tenant, updateTenantDto);
-
-    return this.tenantsRepository.save(tenant);
+  async update(id: string, updateTenantDto: UpdateTenantDto) {
+    return this.tenantRepository.update(id, updateTenantDto);
   }
 
-  async remove(id: string): Promise<void> {
-    const result = await this.tenantsRepository.delete(id);
-
-    if (result.affected === 0) {
-      throw new NotFoundException(`Tenant with ID ${id} not found`);
-    }
+  async remove(id: string) {
+    return this.tenantRepository.delete(id);
   }
 }

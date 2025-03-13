@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession, signOut } from 'next-auth/react';
 import { Layout } from '@supply-chain-system/ui';
-import { UserRole } from '@supply-chain-system/shared';
+// Import UserRole only if needed, otherwise remove or prefix with underscore
+// import { UserRole } from '@supply-chain-system/shared';
 
 interface Tenant {
   id: string;

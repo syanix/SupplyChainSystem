@@ -8,40 +8,80 @@ export enum OrderStatus {
   CANCELLED = "CANCELLED",
 }
 
-export interface OrderItem {
-  id: string;
+/**
+ * Base order item interface with common properties
+ */
+export interface BaseOrderItem {
   productId: string;
   quantity: number;
-  price: number;
-  product?: {
-    name: string;
-    sku: string;
-  };
+  unitPrice: number;
+  notes?: string;
 }
 
-export interface Order {
+/**
+ * Complete order item interface with all properties
+ */
+export interface OrderItem extends BaseOrderItem {
   id: string;
-  orderNumber: string;
-  status: OrderStatus;
-  items: OrderItem[];
-  totalAmount: number;
-  customerId: string;
-  customer?: {
-    name: string;
-    email: string;
-  };
+  orderId: string;
+  totalPrice: number;
+  product?: any; // TODO: Replace with proper Product type
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface CreateOrderRequest {
-  items: {
-    productId: string;
-    quantity: number;
-  }[];
-  customerId: string;
+/**
+ * Base order interface with common properties
+ */
+export interface BaseOrder {
+  status: OrderStatus;
+  orderDate: Date;
+  expectedDeliveryDate?: Date;
+  actualDeliveryDate?: Date;
+  shippingAddress?: string;
+  billingAddress?: string;
+  notes?: string;
+  paymentMethod?: string;
+  paymentStatus?: string;
+  trackingNumber?: string;
+  supplierOrderReference?: string;
+  taxAmount: number;
+  shippingCost: number;
+  supplierId: string;
+  customerId?: string;
 }
 
-export interface UpdateOrderRequest {
-  status?: OrderStatus;
+/**
+ * Complete order interface with all properties
+ */
+export interface Order extends BaseOrder {
+  id: string;
+  orderNumber: string;
+  subtotal: number;
+  totalAmount: number;
+  userId: string;
+  tenantId: string;
+  items: OrderItem[];
+  createdAt: Date;
+  updatedAt: Date;
 }
+
+/**
+ * Type for creating a new order
+ */
+export type CreateOrderRequest = Omit<BaseOrder, "supplierId"> & {
+  items: Omit<BaseOrderItem, "unitPrice">[];
+  supplierId: string;
+};
+
+/**
+ * Type for updating an existing order
+ */
+export type UpdateOrderRequest = Partial<BaseOrder> & {
+  items?: Omit<BaseOrderItem, "unitPrice">[];
+};
+
+/**
+ * Type for order response in API
+ */
+export type OrderResponse = Order;

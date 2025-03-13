@@ -6,10 +6,10 @@ import { OrdersModule } from "./orders/orders.module";
 import { SuppliersModule } from "./suppliers/suppliers.module";
 import { ProductsModule } from "./products/products.module";
 import { TenantsModule } from "./tenants/tenants.module";
-import { DatabaseModule } from "./database/database.module";
 import { ConfigModule, ConfigService, ThrottlerModule } from "./nestjs-modules";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { AdminModule } from "./admin/admin.module";
+import { AppController } from "./app.controller";
+import { PrismaModule } from "./prisma/prisma.module";
 
 @Module({
   imports: [
@@ -18,18 +18,8 @@ import { AdminModule } from "./admin/admin.module";
       isGlobal: true,
     }),
 
-    // Database
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      url: process.env.DATABASE_URL,
-      entities: [__dirname + "/**/*.entity{.ts,.js}"],
-      synchronize: process.env.NODE_ENV !== "production",
-      ssl:
-        process.env.NODE_ENV === "production"
-          ? { rejectUnauthorized: false }
-          : false,
-      autoLoadEntities: true,
-    }),
+    // Database - Prisma
+    PrismaModule,
 
     // Rate limiting
     ThrottlerModule.forRootAsync({
@@ -50,9 +40,9 @@ import { AdminModule } from "./admin/admin.module";
     SuppliersModule,
     ProductsModule,
     TenantsModule,
-    DatabaseModule,
     AdminModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
@@ -63,6 +53,7 @@ export class AppModule {
         { path: "auth/register", method: RequestMethod.POST },
         { path: "tenants", method: RequestMethod.POST },
         { path: "admin/(.*)", method: RequestMethod.ALL },
+        { path: "health", method: RequestMethod.GET },
       )
       .forRoutes("*");
   }

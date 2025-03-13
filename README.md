@@ -17,6 +17,79 @@ This system is designed to help small businesses manage their supply chain opera
 - [Architecture Overview](./docs/ARCHITECTURE.md) - System architecture details
 - [Deployment Guide](./docs/DEPLOYMENT.md) - How to deploy the system
 - [CI/CD Setup](./CICD_README.md) - CI/CD workflows and deployment configurations
+- [Type Strategy](./docs/TYPE_STRATEGY.md) - Our approach to TypeScript types and validation
+- [Linter Warnings Guide](./docs/LINTER_WARNINGS.md) - Guide to addressing linter warnings
+- [Remaining Linter Warnings](./docs/REMAINING_LINTER_WARNINGS.md) - Summary of remaining linter warnings
+
+## Recent Improvements
+
+- **Enhanced Type Safety**: Replaced `any` types with explicit types, created proper type definitions for Prisma entities, and fixed React Hook dependency warnings.
+- **TypeScript Error Fixes**: Resolved method signature mismatches, fixed JWT authentication validation, and ensured proper handling of optional fields like `tenantId`.
+- **Database Management**: Added comprehensive database reinitialization scripts and seeding functionality for easier development and testing.
+- **Repository Improvements**: Fixed mapping functions in Order, Product, and Supplier repositories to ensure proper type conversion between Prisma and shared types.
+- **Documentation**: Created comprehensive documentation for type strategy, linter warnings, and code organization.
+- **Code Quality**: Improved error handling, added proper validation, and ensured consistent typing across the codebase.
+- **Build Process**: Fixed TypeScript configuration for Prisma seed script to ensure proper compilation and execution.
+
+## Quick Start
+
+1. **Clone the repository**:
+
+   ```bash
+   git clone https://github.com/yourusername/SupplyChainSystem.git
+   cd SupplyChainSystem
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install
+   ```
+
+3. **Initialize the database**:
+
+   ```bash
+   npm run db:reinit
+   ```
+
+   This will start the database containers, create the schema, and seed the database with initial data.
+
+4. **Start the development servers**:
+
+   ```bash
+   npm run dev
+   ```
+
+5. **Access the application**:
+
+   - Web: http://localhost:3000
+   - API: http://localhost:3001
+   - API Docs: http://localhost:3001/api/docs
+
+6. **Login with the default admin user**:
+   - Email: admin@example.com
+   - Password: Admin123!
+
+## Docker Requirements
+
+The Docker setup requires the following dependencies:
+
+- **Node.js 20**: The application runs on Node.js 20
+- **PostgreSQL 15**: The database is PostgreSQL 15
+- **OpenSSL 1.1.x**: Prisma requires OpenSSL 1.1.x to function properly
+
+The Dockerfiles include the necessary dependencies for Prisma to work correctly:
+
+```dockerfile
+# Install OpenSSL and other required dependencies for Prisma
+RUN apk add --no-cache openssl openssl-dev libc6-compat
+```
+
+If you encounter OpenSSL errors, you can rebuild the containers using the provided script:
+
+```bash
+./scripts/rebuild-api.sh
+```
 
 ## Core Features
 
@@ -62,11 +135,12 @@ This system is designed to help small businesses manage their supply chain opera
 
 - NestJS (hosted on Fly.io, future AWS migration-ready)
 - PostgreSQL (Supabase) for database
+- Prisma ORM for type-safe database access
 - Cloudflare R2 for file storage (images, PDFs)
 
 ### Additional Technologies
 
-- Type-safe ORM for database schema management
+- Repository pattern for clean architecture
 - ESLint and Prettier for code quality
 - Supabase Auth for authentication
 - Resend for email notifications
@@ -237,3 +311,89 @@ All components are available in the `packages/ui` directory and can be imported 
 ## License
 
 _License information will be added._
+
+## Local Docker Environment
+
+We've set up a local Docker environment that mirrors the Fly.io production environment. This allows you to test your changes locally before deploying to production.
+
+### Local Development Environment
+
+To start the local development environment:
+
+```bash
+# Start the local development environment
+./scripts/local-test.sh
+```
+
+This will:
+
+1. Build and start Docker containers for PostgreSQL and the API
+2. Set up the development environment with hot reloading
+3. Wait for the API to be ready
+4. Provide URLs for accessing the API
+
+### Simulating Fly.io Deployment
+
+To simulate a Fly.io deployment locally:
+
+```bash
+# Simulate a Fly.io deployment
+./scripts/simulate-fly-deploy.sh
+```
+
+This will:
+
+1. Build the production Docker image using the same Dockerfile as Fly.io
+2. Create a Docker network to simulate the Fly.io network
+3. Start PostgreSQL and the API containers with production settings
+4. Wait for the API to be ready
+5. Provide URLs for accessing the API
+
+### Cleaning Up
+
+To clean up all Docker containers and networks:
+
+```bash
+# Clean up all Docker containers and networks
+./scripts/cleanup.sh
+```
+
+### Troubleshooting
+
+If you encounter issues with the local Docker environment:
+
+1. Check the logs:
+
+   ```bash
+   # For the development environment
+   docker-compose logs -f api
+
+   # For the Fly.io simulation
+   docker logs -f fly-api
+   ```
+
+2. Ensure the DATABASE_URL environment variable is correctly set in both environments
+
+3. Verify that the health endpoint is working correctly
+
+4. If needed, rebuild the containers:
+
+   ```bash
+   # For the development environment
+   docker-compose down && docker-compose up -d --build
+
+   # For the Fly.io simulation
+   docker rm -f fly-api fly-postgres && ./scripts/simulate-fly-deploy.sh
+   ```
+
+## Type Safety
+
+We prioritize type safety throughout the codebase:
+
+- **TypeScript First**: All code is fully typed with TypeScript
+- **No Any**: We avoid using `any` type whenever possible
+- **Type Hierarchies**: We use type hierarchies to model domain entities
+- **Runtime Validation**: We use Zod for runtime validation of data
+- **Repository Pattern**: We use repository interfaces to abstract data access
+
+For more details, see our [Type Strategy](./docs/TYPE_STRATEGY.md) document.

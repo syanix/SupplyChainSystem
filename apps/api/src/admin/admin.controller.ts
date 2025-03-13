@@ -7,7 +7,6 @@ import {
   Param,
   Delete,
   UseGuards,
-  NotFoundException,
   Query,
 } from "@nestjs/common";
 import {
@@ -25,6 +24,7 @@ import { CreateTenantDto } from "../tenants/dto/create-tenant.dto";
 import { UpdateTenantDto } from "../tenants/dto/update-tenant.dto";
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { UpdateUserDto } from "../users/dto/update-user.dto";
+import { UserRole } from "@supply-chain-system/shared";
 
 @ApiTags("admin")
 @Controller("admin")
@@ -80,23 +80,24 @@ export class AdminController {
 
   // User management endpoints (across all tenants)
   @Get("users")
-  @ApiOperation({
-    summary: "Get all users across all tenants (Super Admin only)",
-  })
+  @ApiOperation({ summary: "Get all users (Super Admin only)" })
   @ApiResponse({ status: 200, description: "List of all users" })
   @ApiQuery({
     name: "role",
     required: false,
+    enum: UserRole,
     description: "Filter by user role",
   })
   @ApiQuery({
     name: "isActive",
     required: false,
-    description: "Filter by active status",
+    type: String,
+    description: "Filter by active status (true/false)",
   })
   @ApiQuery({
     name: "tenantId",
     required: false,
+    type: String,
     description: "Filter by tenant ID",
   })
   async getAllUsers(
@@ -105,7 +106,7 @@ export class AdminController {
     @Query("tenantId") tenantId?: string,
   ) {
     const options = {
-      ...(role && { role }),
+      ...(role && { role: role as UserRole }),
       ...(isActive !== undefined && { isActive: isActive === "true" }),
       ...(tenantId && { tenantId }),
     };

@@ -14,6 +14,7 @@ This guide provides step-by-step instructions for setting up and running the Sup
    - [Production Build](#production-build)
 4. [Accessing the Application](#accessing-the-application)
 5. [First-Time Setup](#first-time-setup)
+   - [Using Pre-Seeded Admin User](#using-pre-seeded-admin-user)
    - [Creating Your First User](#creating-your-first-user)
    - [Setting Up Your Company](#setting-up-your-company)
 6. [Development Workflow](#development-workflow)
@@ -117,19 +118,34 @@ Before you begin, ensure your system meets the following requirements:
 
    - PostgreSQL version: 15
    - Port: 5432
-   - Username: username
-   - Password: password
-   - Database: supply_chain_db
+   - Username: postgres
+   - Password: postgres
+   - Database: supply_chain
 
-2. Run database migrations:
+2. Initialize the database with schema and seed data:
 
    ```bash
-   cd packages/database
-   npm run migrate:dev
+   npm run db:reinit
    ```
 
-3. Seed the database with initial data (optional):
+   This comprehensive command:
+
+   - Resets the Docker containers
+   - Drops and recreates the database
+   - Runs all migrations
+   - Seeds the database with initial data
+
+3. Alternatively, you can run these steps individually:
+
    ```bash
+   # Start the database containers
+   npm run db:up
+
+   # Run database migrations
+   cd packages/database
+   npm run db:migrate
+
+   # Seed the database with initial data
    npm run db:seed
    ```
 
@@ -211,9 +227,18 @@ Once the system is running, you can access:
 
 ## First-Time Setup
 
+### Using Pre-Seeded Admin User
+
+If you've run the database seeding script, you can log in with the pre-created admin user:
+
+- **Email**: admin@example.com
+- **Password**: Admin123!
+
+This user has SUPER_ADMIN privileges and is associated with the "Default Company" tenant.
+
 ### Creating Your First User
 
-When you first run the application, you'll need to create an initial admin user:
+If you prefer to create a new user instead of using the seeded admin:
 
 1. Access the registration endpoint:
 
@@ -320,15 +345,21 @@ For more detailed troubleshooting information, please refer to the [Troubleshoot
 
 ### Resetting the Database
 
-If you need to reset the database:
+If you need to reset the database completely:
 
 ```bash
-# If using Docker
+# Complete database reinitialization (drops and recreates everything)
+npm run db:reinit
+```
+
+For other database operations:
+
+```bash
+# Just reset the containers (preserves data)
 npm run db:reset
 
-# If using local PostgreSQL
-cd packages/database
-npm run migrate:reset
+# Just run the seed script
+npm run db:seed
 ```
 
 ### Logs

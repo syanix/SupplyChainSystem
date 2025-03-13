@@ -11,6 +11,16 @@ export class CreateTenantDto {
   name: string;
 
   @ApiProperty({
+    example: "acme-inc",
+    description:
+      "The slug of the tenant (will be auto-generated if not provided)",
+    required: false,
+  })
+  @IsOptional()
+  @IsString({ message: "Slug must be a string" })
+  slug?: string;
+
+  @ApiProperty({
     example: "A global supply chain company",
     description: "The description of the tenant",
     required: false,

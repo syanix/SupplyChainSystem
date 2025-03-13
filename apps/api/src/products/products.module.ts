@@ -1,13 +1,20 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { ProductsService } from "./products.service";
 import { ProductsController } from "./products.controller";
-import { Product } from "./entities/product.entity";
+import { ProductsService } from "./products.service";
+import { PrismaModule } from "../prisma/prisma.module";
+import { ProductRepository } from "./repositories/product.repository";
+import { PRODUCT_REPOSITORY } from "./repositories/product.repository.interface";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product])],
+  imports: [PrismaModule],
   controllers: [ProductsController],
-  providers: [ProductsService],
+  providers: [
+    ProductsService,
+    {
+      provide: PRODUCT_REPOSITORY,
+      useClass: ProductRepository,
+    },
+  ],
   exports: [ProductsService],
 })
 export class ProductsModule {}

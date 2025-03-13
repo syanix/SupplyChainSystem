@@ -9,6 +9,7 @@ import {
   IsBoolean,
   Matches,
 } from "class-validator";
+import { UserRole } from "@supply-chain-system/shared";
 
 export class CreateUserDto {
   @ApiProperty({
@@ -48,13 +49,13 @@ export class CreateUserDto {
   @ApiProperty({
     example: "STAFF",
     description: "The role of the user",
-    enum: ["SUPER_ADMIN", "ADMIN", "MANAGER", "STAFF"],
-    default: "STAFF",
+    enum: UserRole,
+    default: UserRole.STAFF,
   })
-  @IsIn(["SUPER_ADMIN", "ADMIN", "MANAGER", "STAFF"], {
+  @IsIn(Object.values(UserRole), {
     message: "Role must be one of: SUPER_ADMIN, ADMIN, MANAGER, STAFF",
   })
-  role: string;
+  role: UserRole;
 
   @ApiProperty({
     example: "123e4567-e89b-12d3-a456-426614174000",

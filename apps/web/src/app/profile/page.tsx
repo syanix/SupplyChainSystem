@@ -20,37 +20,6 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Fetch user profile from API
-  const fetchUserProfile = async () => {
-    if (!session?.accessToken) return;
-
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile/me`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
-      }
-
-      const userData = await response.json();
-      console.log('User profile data:', userData);
-
-      setFormData(prev => ({
-        ...prev,
-        name: userData.name || '',
-        email: userData.email || '',
-        role: userData.role || '',
-        tenantName: userData.tenant?.name || '',
-      }));
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-    }
-  };
-
   useEffect(() => {
     // Redirect to login if not authenticated
     if (status === 'unauthenticated') {
@@ -64,6 +33,36 @@ export default function ProfilePage() {
 
     // Fetch user profile when session is available
     if (session) {
+      const fetchUserProfile = async () => {
+        if (!session?.accessToken) return;
+
+        try {
+          const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/profile/me`, {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${session.accessToken}`,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error('Failed to fetch user profile');
+          }
+
+          const userData = await response.json();
+          console.log('User profile data:', userData);
+
+          setFormData(prev => ({
+            ...prev,
+            name: userData.name || '',
+            email: userData.email || '',
+            role: userData.role || '',
+            tenantName: userData.tenant?.name || '',
+          }));
+        } catch (error) {
+          console.error('Error fetching user profile:', error);
+        }
+      };
+
       fetchUserProfile();
     }
   }, [session, status, router]);

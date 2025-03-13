@@ -77,5 +77,5 @@ export class CreateProductDto {
     type: "object",
   })
   @IsOptional()
-  attributes?: Record<string, any>;
+  attributes?: Record<string, unknown>;
 }

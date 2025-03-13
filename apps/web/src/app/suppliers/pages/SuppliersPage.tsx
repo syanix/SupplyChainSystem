@@ -42,6 +42,7 @@ const SuppliersPage: React.FC = () => {
 
   useEffect(() => {
     fetchSuppliers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session]);
 
   const handleDelete = async (id: string) => {
@@ -90,7 +91,7 @@ const SuppliersPage: React.FC = () => {
     {
       title: 'Actions',
       key: 'actions',
-      render: (_: any, record: Supplier) => (
+      render: (_: unknown, record: Supplier) => (
         <Space size="middle">
           <Button
             type="primary"

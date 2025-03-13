@@ -1,14 +1,20 @@
 import { Module } from "@nestjs/common";
-import { TypeOrmModule } from "@nestjs/typeorm";
 import { SuppliersController } from "./suppliers.controller";
 import { SuppliersService } from "./suppliers.service";
-import { Supplier } from "./entities/supplier.entity";
-import { SupplierContact } from "./entities/supplier-contact.entity";
+import { PrismaModule } from "../prisma/prisma.module";
+import { SupplierRepository } from "./repositories/supplier.repository";
+import { SUPPLIER_REPOSITORY } from "./repositories/supplier.repository.interface";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Supplier, SupplierContact])],
+  imports: [PrismaModule],
   controllers: [SuppliersController],
-  providers: [SuppliersService],
+  providers: [
+    SuppliersService,
+    {
+      provide: SUPPLIER_REPOSITORY,
+      useClass: SupplierRepository,
+    },
+  ],
   exports: [SuppliersService],
 })
 export class SuppliersModule {}

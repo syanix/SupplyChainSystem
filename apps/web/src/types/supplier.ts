@@ -5,6 +5,9 @@ export enum SupplierStatus {
   BLOCKED = 'blocked',
 }
 
+// Define a type for unknown record objects instead of using 'any'
+type UnknownRecord = Record<string, unknown>;
+
 export interface SupplierContact {
   id: string;
   name: string;
@@ -37,7 +40,7 @@ export interface Supplier {
   notes?: string;
   tenantId: string;
   contacts: SupplierContact[];
-  customFields?: Record<string, any>;
+  customFields?: UnknownRecord;
   createdAt: string;
   updatedAt: string;
 }

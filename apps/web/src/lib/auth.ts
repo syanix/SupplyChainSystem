@@ -1,4 +1,5 @@
 import { NextAuthOptions } from 'next-auth';
+// eslint-disable-next-line import/no-named-as-default
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { UserRole, Tenant } from '@supply-chain-system/shared';
 
@@ -10,7 +11,7 @@ export const authOptions: NextAuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
-      async authorize(credentials) {
+      async authorize(credentials: Record<string, string> | undefined) {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }

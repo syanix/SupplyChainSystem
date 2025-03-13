@@ -126,11 +126,11 @@ export class CreateSupplierDto {
   notes?: string;
 
   @ApiPropertyOptional({
-    description: "Custom fields for the supplier",
+    description: "Custom attributes for the supplier",
     type: "object",
   })
   @IsOptional()
-  customFields?: Record<string, any>;
+  attributes?: Record<string, unknown>;
 
   @ApiPropertyOptional({
     type: [CreateSupplierContactDto],

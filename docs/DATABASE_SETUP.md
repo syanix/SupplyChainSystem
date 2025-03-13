@@ -187,18 +187,72 @@ If you're having trouble connecting to the database:
 
 ### Reset Database
 
-To completely reset the database:
+To completely reset the database, we've created convenient scripts in the project:
 
 ```bash
-# For Docker setup
-docker-compose down
-docker volume rm supply-chain-system_postgres_data
-docker-compose up -d postgres
+# Reset the database containers (preserves data)
+npm run db:reset
 
-# For manual installation
-dropdb -U postgres supply_chain
-createdb -U postgres supply_chain
+# Completely reinitialize the database (drops and recreates everything)
+npm run db:reinit
 ```
+
+The `db:reinit` script performs the following steps:
+
+1. Stops and removes all containers, volumes, and networks
+2. Recreates the containers, volumes, and networks
+3. Drops and recreates the database
+4. Runs the migrations to create the schema
+5. Seeds the database with initial data
+
+## Database Seeding
+
+The system includes a seed script that populates the database with initial data for development and testing purposes.
+
+### Seed Data
+
+The seed script creates the following data:
+
+1. **Default Tenant**:
+
+   - Name: "Default Company"
+   - Slug: "default-company"
+   - Description: "Default company for development"
+
+2. **Super Admin User**:
+
+   - Email: admin@example.com
+   - Password: Admin123!
+   - Role: SUPER_ADMIN
+
+3. **Default Supplier**:
+
+   - Name: "ABC Supplies"
+   - Email: contact@abcsupplies.com
+   - Phone: 123-456-7890
+   - Address: 123 Main St, Anytown, CA, USA
+   - Contact: John Doe (Sales Manager)
+
+4. **Sample Products**:
+   - Product 1: SKU-001, Price: $19.99, Stock: 100
+   - Product 2: SKU-002, Price: $29.99, Stock: 50
+
+### Running the Seed Script
+
+To run the seed script manually:
+
+```bash
+# From the project root
+npm run db:seed
+
+# Or from the database package
+cd packages/database
+npm run db:seed
+```
+
+### Customizing Seed Data
+
+The seed script is located at `packages/database/prisma/seed.ts`. You can modify this file to customize the seed data according to your needs.
 
 ## Additional Resources
 

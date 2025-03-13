@@ -18,7 +18,7 @@ import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
 import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 import { GetUser } from "../common/decorators/get-user.decorator";
-import { User } from "../users/entities/user.entity";
+import { User } from "@supply-chain-system/shared";
 
 @ApiTags("auth")
 @Controller("auth")

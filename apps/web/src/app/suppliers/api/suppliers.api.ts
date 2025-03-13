@@ -1,6 +1,9 @@
 import { Supplier, SupplierStatus } from '../../../types/supplier';
 import { apiClient } from '../../api-client';
 
+// Define a type for unknown record objects instead of using 'any'
+type UnknownRecord = Record<string, unknown>;
+
 const API_URL = '/suppliers';
 
 export interface CreateSupplierRequest {
@@ -18,7 +21,7 @@ export interface CreateSupplierRequest {
   taxId?: string;
   paymentTerms?: string;
   notes?: string;
-  customFields?: Record<string, any>;
+  customFields?: UnknownRecord;
   contacts?: {
     name: string;
     position?: string;
@@ -42,11 +45,23 @@ export const suppliersApi = {
   },
 
   create: async (supplier: CreateSupplierRequest, token: string): Promise<Supplier> => {
-    return apiClient.request<Supplier>(API_URL, 'POST', supplier, token);
+    // Cast to UnknownRecord to satisfy the type constraint
+    return apiClient.request<Supplier>(
+      API_URL,
+      'POST',
+      supplier as unknown as UnknownRecord,
+      token
+    );
   },
 
   update: async (id: string, supplier: UpdateSupplierRequest, token: string): Promise<Supplier> => {
-    return apiClient.request<Supplier>(`${API_URL}/${id}`, 'PUT', supplier, token);
+    // Cast to UnknownRecord to satisfy the type constraint
+    return apiClient.request<Supplier>(
+      `${API_URL}/${id}`,
+      'PUT',
+      supplier as unknown as UnknownRecord,
+      token
+    );
   },
 
   delete: async (id: string, token: string): Promise<void> => {

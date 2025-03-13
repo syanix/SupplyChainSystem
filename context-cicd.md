@@ -56,6 +56,68 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Migration from TypeORM to Prisma (2023-11-28)
+
+We've migrated from TypeORM to Prisma as our ORM for database access:
+
+1. **Issue**: We were experiencing dependency injection issues with TypeORM and NestJS v11, particularly with the `forRootAsync` method.
+
+2. **Solution**:
+
+   - Migrated from TypeORM to Prisma for database access
+   - Created a PrismaService and PrismaModule
+   - Updated Docker configuration to include Prisma files
+   - Updated services to use Prisma instead of TypeORM repositories
+
+3. **Benefits**:
+   - Better type safety with Prisma's generated TypeScript types
+   - Improved developer experience with better tooling and error messages
+   - Better performance compared to TypeORM
+   - More maintainable code with Prisma's schema-first approach
+   - Resolved dependency injection issues with NestJS v11
+
+For more details, see the [Prisma Migration Context](./context-prisma.md).
+
+### Reverting to Dockerfile Approach (2023-11-27)
+
+We've reverted from using Fly.io's standard buildpacks to a custom Dockerfile approach:
+
+1. **Issue**: The buildpack deployment was failing with npm version detection errors, particularly with Node.js 22.x and 23.x versions.
+
+2. **Solution**:
+
+   - Created a new Dockerfile that explicitly uses Node.js 20-alpine
+   - Updated the fly.toml and fly.staging.toml files to use the Dockerfile instead of buildpacks
+   - Simplified the build process by using standard Docker multi-stage build techniques
+   - Removed buildpack-specific configuration that was causing issues
+
+3. **Benefits**:
+   - More reliable build process with explicit control over the Node.js version
+   - Simplified configuration without relying on buildpack-specific features
+   - Better compatibility with our monorepo structure
+   - Consistent build environment across local and CI/CD workflows
+
+This change provides a more stable deployment process while maintaining the same functionality and deployment capabilities.
+
+### Node.js Version Update (2023-11-26)
+
+We've updated the Node.js version used in our Fly.io deployments:
+
+1. **Issue**: The build was failing with an error detecting the npm version: `Failed to determine npm version information`.
+
+2. **Solution**:
+
+   - Updated the Node.js version to 23.9.0 in both `fly.toml` and `fly.staging.toml` files
+   - Modified the `engines` field in `package.json` to support Node.js versions up to 24.0.0
+   - This ensures compatibility with the latest Node.js features while maintaining stability
+
+3. **Benefits**:
+   - Resolves npm version detection issues during the build process
+   - Takes advantage of performance improvements in newer Node.js versions
+   - Ensures compatibility with the latest npm features
+
+This change allows our application to build successfully using Fly.io's standard buildpacks while leveraging the latest Node.js runtime.
+
 ### Fly.io Standard Build Configuration (2023-11-25)
 
 We've transitioned from a custom Dockerfile to Fly.io's standard build process:
@@ -321,3 +383,70 @@ Each environment has its own configuration for:
 - Implement blue-green deployments
 - Add security scanning to the CI pipeline
 - Implement automated database backups before migrations
+
+## Successful Deployment with Dockerfile (2023-11-27)
+
+The API application has been successfully deployed to Fly.io using the Dockerfile approach. The deployment process completed without errors, and the application is now accessible at https://supply-chain-system-api.fly.dev/.
+
+### Key Changes Made:
+
+1. **Removed Release Command**: The `release_command` was removed from both `fly.toml` and `fly.staging.toml` files as the migration script was not properly defined in the package.json.
+
+2. **Simplified Deployment Process**: By using a Dockerfile instead of buildpacks, we've created a more reliable and consistent build process that works well with our monorepo structure.
+
+3. **Successful Build and Deployment**: The Docker image was successfully built and deployed with a size of 275 MB, indicating an efficient containerization of our application.
+
+### Next Steps:
+
+1. **Database Migrations**: Implement proper database migration scripts and potentially reintroduce the release command once these are properly set up.
+
+2. **Monitoring and Logging**: Set up proper monitoring and logging for the deployed application to ensure stability and performance.
+
+3. **Frontend Deployment**: Configure and deploy the frontend application to complete the full-stack deployment.
+
+4. **CI/CD Pipeline**: Ensure the CI/CD pipeline is properly configured to use the new Dockerfile approach for automated deployments.
+
+## Local Testing Before Deployment
+
+To improve deployment reliability, we've implemented a local Docker environment that mirrors the Fly.io production environment. This allows developers to test their changes locally before deploying to production.
+
+### Local Docker Environment
+
+The local Docker environment is defined in `docker-compose.yml` and includes:
+
+- PostgreSQL database container
+- API container running in development mode with hot reloading
+
+To start the local development environment:
+
+```bash
+./scripts/local-test.sh
+```
+
+### Fly.io Simulation Environment
+
+We've also created a Fly.io simulation environment that closely mirrors the production environment:
+
+- Uses the same Dockerfile as production
+- Runs the API in production mode
+- Uses the same environment variables as production
+- Simulates the Fly.io network setup
+
+To simulate a Fly.io deployment locally:
+
+```bash
+./scripts/simulate-fly-deploy.sh
+```
+
+### Deployment Workflow with Local Testing
+
+The recommended workflow for deploying changes is:
+
+1. Develop and test in the local development environment
+2. Before deploying, test in the Fly.io simulation environment
+3. If the simulation is successful, deploy to Fly.io
+4. Verify the deployment in production
+
+This approach helps catch issues before they reach production and improves the reliability of deployments.
+
+For more details, see the [Docker Environment Context](./context-docker.md).

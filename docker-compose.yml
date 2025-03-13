@@ -17,7 +17,7 @@ services:
     command: ["postgres", "-c", "listen_addresses=*"]  # 👈 Allow remote connections
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
+      interval: 5s
       timeout: 5s
       retries: 5
 
@@ -34,6 +34,26 @@ services:
       - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - postgres
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile.dev
+    container_name: supply-chain-api
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/supply_chain?schema=supply_chain
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./apps/api/src:/app/apps/api/src
+      - ./packages/database/prisma:/app/packages/database/prisma
+      - ./packages:/app/packages
+    command: npm run start:dev
 
 volumes:
   postgres_data:

@@ -42,9 +42,9 @@ export default function DashboardPage() {
 
     // Update app context with session data
     if (session?.user && !user) {
-      setUser(session.user as any);
+      setUser(session.user as unknown as typeof user);
       if (session.tenant) {
-        setTenant(session.tenant as any);
+        setTenant(session.tenant as unknown as typeof tenant);
       }
     }
 

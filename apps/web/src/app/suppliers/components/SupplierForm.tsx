@@ -5,7 +5,7 @@ import { CreateSupplierRequest, UpdateSupplierRequest } from '../api/suppliers.a
 import { SupplierStatus } from '../../../types/supplier';
 
 export interface SupplierFormProps {
-  initialValues?: any;
+  initialValues?: CreateSupplierRequest | UpdateSupplierRequest;
   onSubmit: (values: CreateSupplierRequest | UpdateSupplierRequest) => Promise<void>;
   loading?: boolean;
   title?: string;
@@ -19,7 +19,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({
 }) => {
   const [form] = Form.useForm();
 
-  const handleSubmit = async (values: any) => {
+  const handleSubmit = async (values: CreateSupplierRequest | UpdateSupplierRequest) => {
     try {
       await onSubmit(values);
       if (!initialValues) {

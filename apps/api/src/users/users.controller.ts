@@ -9,12 +9,16 @@ import {
   UseGuards,
   UnauthorizedException,
   BadRequestException,
+  NotFoundException,
+  Put,
+  Req,
 } from "@nestjs/common";
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiParam,
 } from "@nestjs/swagger";
 import { UsersService } from "./users.service";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -23,6 +27,8 @@ import { ChangePasswordDto } from "./dto/change-password.dto";
 import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import { GetUser } from "../common/decorators/get-user.decorator";
 import * as bcrypt from "bcrypt";
+import { Request } from "express";
+import { UserResponseDto } from "./dto/user-response.dto";
 
 @ApiTags("users")
 @Controller("users")
@@ -84,12 +90,28 @@ export class UsersController {
     @GetUser("id") userId: string,
     @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    const user = await this.usersService.findOne(userId);
+    // Get user details first to get the email
+    const userDetails = await this.usersService.findOne(userId);
+
+    if (!userDetails) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    // Get user with password for verification
+    const user = await this.usersService.getUserWithPasswordByEmail(
+      userDetails.email,
+    );
+
+    if (!user) {
+      throw new NotFoundException(
+        `User with email ${userDetails.email} not found`,
+      );
+    }
 
     // Verify current password
     const isPasswordValid = await bcrypt.compare(
       changePasswordDto.currentPassword,
-      user.password || "",
+      (user as { password: string }).password,
     );
 
     if (!isPasswordValid) {
@@ -120,20 +142,25 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  @Patch(":id")
-  @ApiOperation({ summary: "Update a user" })
-  @ApiResponse({ status: 200, description: "User updated successfully" })
+  @ApiParam({
+    name: "id",
+    required: true,
+    description: "User ID",
+    schema: { type: "string" },
+  })
+  @ApiResponse({
+    status: 200,
+    description: "User updated successfully",
+    type: UserResponseDto,
+  })
   @ApiResponse({ status: 404, description: "User not found" })
-  update(
+  @Put(":id")
+  async update(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @GetUser("tenantId") tenantId: string,
+    @Req() request: Request & { user: { tenantId?: string } },
   ) {
-    // Ensure the tenant ID cannot be changed
-    if (updateUserDto.tenantId) {
-      updateUserDto.tenantId = tenantId;
-    }
-    return this.usersService.update(id, updateUserDto);
+    return this.usersService.update(id, updateUserDto, request.user.tenantId);
   }
 
   @Delete(":id")

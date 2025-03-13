@@ -1,3 +1,6 @@
+// Define a type for unknown record objects instead of using 'any'
+type UnknownRecord = Record<string, unknown>;
+
 export interface Product {
   id: string;
   name: string;
@@ -12,7 +15,7 @@ export interface Product {
   tenantId: string;
   supplierId: string;
   category?: string;
-  attributes?: Record<string, any>;
+  attributes?: UnknownRecord;
   createdAt: Date;
   updatedAt: Date;
 }

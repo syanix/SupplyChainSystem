@@ -1,35 +1,42 @@
-export interface Product {
-  id: string;
+/**
+ * Base product interface with common properties
+ */
+export interface BaseProduct {
   name: string;
   sku: string;
   description?: string;
   price: number;
   unit: string;
-  stock: number;
   imageUrl?: string;
   supplierId?: string;
+}
+
+/**
+ * Complete product interface with all properties
+ */
+export interface Product extends BaseProduct {
+  id: string;
+  stock: number;
   tenantId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface CreateProductRequest {
-  name: string;
-  sku: string;
-  description?: string;
-  price: number;
-  unit: string;
+/**
+ * Type for creating a new product
+ */
+export type CreateProductRequest = BaseProduct & {
   stock: number;
-  imageUrl?: string;
-  supplierId?: string;
-}
+};
 
-export interface UpdateProductRequest {
-  name?: string;
-  sku?: string;
-  description?: string;
-  price?: number;
-  unit?: string;
+/**
+ * Type for updating an existing product
+ */
+export type UpdateProductRequest = Partial<BaseProduct> & {
   stock?: number;
-  imageUrl?: string;
-}
+};
+
+/**
+ * Type for product response in API
+ */
+export type ProductResponse = Product;

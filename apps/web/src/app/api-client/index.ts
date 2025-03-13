@@ -1,5 +1,8 @@
 // API Client for making requests to the backend
 
+// Define a type for unknown record objects instead of using 'any'
+type UnknownRecord = Record<string, unknown>;
+
 export const apiClient = {
   // Base URL for API requests
   baseUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
@@ -8,7 +11,7 @@ export const apiClient = {
   async request<T>(
     endpoint: string,
     method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
-    data?: any,
+    data?: UnknownRecord,
     token?: string
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
@@ -46,7 +49,7 @@ export const apiClient = {
     login: (email: string, password: string) =>
       apiClient.request('/auth/login', 'POST', { email, password }),
 
-    register: (userData: any) => apiClient.request('/auth/register', 'POST', userData),
+    register: (userData: UnknownRecord) => apiClient.request('/auth/register', 'POST', userData),
   },
 
   // Suppliers endpoints
@@ -56,9 +59,10 @@ export const apiClient = {
     getById: (id: string, token: string) =>
       apiClient.request(`/suppliers/${id}`, 'GET', undefined, token),
 
-    create: (data: any, token: string) => apiClient.request('/suppliers', 'POST', data, token),
+    create: (data: UnknownRecord, token: string) =>
+      apiClient.request('/suppliers', 'POST', data, token),
 
-    update: (id: string, data: any, token: string) =>
+    update: (id: string, data: UnknownRecord, token: string) =>
       apiClient.request(`/suppliers/${id}`, 'PUT', data, token),
 
     delete: (id: string, token: string) =>
@@ -72,9 +76,10 @@ export const apiClient = {
     getById: (id: string, token: string) =>
       apiClient.request(`/orders/${id}`, 'GET', undefined, token),
 
-    create: (data: any, token: string) => apiClient.request('/orders', 'POST', data, token),
+    create: (data: UnknownRecord, token: string) =>
+      apiClient.request('/orders', 'POST', data, token),
 
-    update: (id: string, data: any, token: string) =>
+    update: (id: string, data: UnknownRecord, token: string) =>
       apiClient.request(`/orders/${id}`, 'PUT', data, token),
 
     delete: (id: string, token: string) =>
@@ -88,9 +93,10 @@ export const apiClient = {
     getById: (id: string, token: string) =>
       apiClient.request(`/products/${id}`, 'GET', undefined, token),
 
-    create: (data: any, token: string) => apiClient.request('/products', 'POST', data, token),
+    create: (data: UnknownRecord, token: string) =>
+      apiClient.request('/products', 'POST', data, token),
 
-    update: (id: string, data: any, token: string) =>
+    update: (id: string, data: UnknownRecord, token: string) =>
       apiClient.request(`/products/${id}`, 'PUT', data, token),
 
     delete: (id: string, token: string) =>

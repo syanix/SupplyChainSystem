@@ -78,7 +78,7 @@ Please open an issue with this stack trace at https://github.com/nodejs/node/iss
 
 ## Database Connection Issues
 
-### Connection Refused
+### Cannot Connect to PostgreSQL
 
 **Error:**
 
@@ -86,52 +86,116 @@ Please open an issue with this stack trace at https://github.com/nodejs/node/iss
 Error: connect ECONNREFUSED 127.0.0.1:5432
 ```
 
+**Causes:**
+
+- PostgreSQL is not running
+- PostgreSQL is running on a different port
+- Incorrect connection string
+
 **Solutions:**
 
-1. **Ensure PostgreSQL is running:**
+1. **Verify PostgreSQL is running:**
 
    ```bash
-   # If using Docker
+   # For Docker setup
    docker ps | grep postgres
 
-   # If using local PostgreSQL
+   # For manual installation
    pg_isready
    ```
 
-2. **Check connection string:**
-   Verify your `.env` file has the correct DATABASE_URL:
+2. **Check connection string in .env files:**
+
+   Ensure your DATABASE_URL is correct:
 
    ```
-   DATABASE_URL="postgresql://username:password@localhost:5432/supply_chain_db?schema=public"
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/supply_chain"
    ```
 
 3. **Restart PostgreSQL:**
 
    ```bash
-   # If using Docker
-   docker-compose restart postgres
+   # For Docker setup
+   npm run db:reset
 
-   # If using local PostgreSQL
-   sudo service postgresql restart  # Linux
-   brew services restart postgresql  # macOS
+   # For manual installation
+   sudo systemctl restart postgresql
    ```
 
-### Authentication Failed
+### Database Schema Issues
 
 **Error:**
 
 ```
-Error: password authentication failed for user "username"
+PrismaClientInitializationError: Schema Error: Error in schema.prisma:
 ```
+
+**Causes:**
+
+- Outdated Prisma schema
+- Failed migrations
+- Database schema doesn't match Prisma schema
 
 **Solutions:**
 
-1. **Check credentials:**
-   Verify the username and password in your DATABASE_URL match your PostgreSQL configuration.
+1. **Completely reinitialize the database:**
 
-2. **Reset PostgreSQL container:**
    ```bash
-   npm run db:reset
+   npm run db:reinit
+   ```
+
+   This will:
+
+   - Reset the Docker containers
+   - Drop and recreate the database
+   - Run all migrations
+   - Seed the database with initial data
+
+2. **Run migrations manually:**
+
+   ```bash
+   cd packages/database
+   npx prisma migrate dev
+   ```
+
+3. **Generate Prisma client:**
+
+   ```bash
+   cd packages/database
+   npx prisma generate
+   ```
+
+### Prisma Migration Error: Database Schema Not Empty
+
+**Error:**
+
+```
+Error: P3005
+The database schema is not empty. Read more about how to baseline an existing production database: https://pris.ly/d/migrate-baseline
+```
+
+**Causes:**
+
+- Trying to run migrations on a database that already has tables
+- Previous migrations failed to complete properly
+
+**Solutions:**
+
+1. **Drop and recreate the database:**
+
+   ```bash
+   # Using our script
+   npm run db:reinit
+
+   # Or manually with Docker
+   docker exec -it supply-chain-postgres bash -c "psql -U postgres -c 'DROP DATABASE IF EXISTS supply_chain;' && psql -U postgres -c 'CREATE DATABASE supply_chain;'"
+   ```
+
+2. **Reset Prisma migrations:**
+
+   ```bash
+   cd packages/database
+   npx prisma migrate reset --force
    ```
 
 ## Web Application Issues
@@ -247,6 +311,47 @@ TS2307: Cannot find module '...' or its corresponding type declarations.
 
 2. **Check TypeScript configuration:**
    Verify your `tsconfig.json` has the correct paths configuration.
+
+**Error:**
+
+```
+File '/path/to/file.ts' is not under 'rootDir' '/path/to/src'. 'rootDir' is expected to contain all source files.
+```
+
+**Causes:**
+
+- Files outside the `rootDir` are being included in the TypeScript compilation
+- Conflicting `include` patterns in `tsconfig.json`
+
+**Solutions:**
+
+1. **Create a separate TypeScript configuration for specific files:**
+
+   If you have files like Prisma seed scripts that need to be compiled separately:
+
+   ```bash
+   # Create a separate tsconfig file (e.g., tsconfig.seed.json)
+   {
+     "extends": "../../tsconfig.json",
+     "compilerOptions": {
+       "rootDir": ".",
+       "module": "CommonJS"
+     },
+     "include": ["prisma/**/*"]
+   }
+   ```
+
+   Then update your script to use this configuration:
+
+   ```json
+   "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
+   ```
+
+2. **Adjust your directory structure:**
+   Move files to be within the `rootDir` specified in your `tsconfig.json`.
+
+3. **Update your `rootDir` setting:**
+   Change the `rootDir` to a common ancestor directory that includes all source files.
 
 ## Still Having Issues?
 

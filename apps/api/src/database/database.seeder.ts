@@ -1,20 +1,15 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { User } from "../users/entities/user.entity";
-import { Tenant } from "../tenants/entities/tenant.entity";
-import * as bcrypt from "bcrypt";
-import { v4 as uuidv4 } from "uuid";
+import { UsersService } from "../users/users.service";
+import { TenantsService } from "../tenants/tenants.service";
+import { UserRole } from "@supply-chain-system/shared";
 
 @Injectable()
 export class DatabaseSeeder implements OnModuleInit {
   private readonly logger = new Logger(DatabaseSeeder.name);
 
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(Tenant)
-    private readonly tenantRepository: Repository<Tenant>,
+    private readonly usersService: UsersService,
+    private readonly tenantsService: TenantsService,
   ) {}
 
   async onModuleInit() {
@@ -22,7 +17,7 @@ export class DatabaseSeeder implements OnModuleInit {
       this.logger.log("Starting database seeding...");
 
       // Create tenant first
-      let tenant: Tenant | null = null;
+      let tenant = null;
       try {
         tenant = await this.seedDefaultTenant();
       } catch (tenantError: unknown) {
@@ -50,40 +45,28 @@ export class DatabaseSeeder implements OnModuleInit {
     }
   }
 
-  private async seedDefaultTenant(): Promise<Tenant> {
+  private async seedDefaultTenant() {
     const defaultTenantName = "Default Organization";
-    const defaultTenantSlug = "default-organization";
 
     try {
-      // First try to find the tenant using a simple query to avoid schema mismatches
-      const existingTenantQuery = await this.tenantRepository.query(
-        `SELECT id, name FROM tenants WHERE name = $1 LIMIT 1`,
-        [defaultTenantName],
-      );
+      // First try to find the tenant by name
+      const tenants = await this.tenantsService.findAll();
+      const existingTenant = tenants.find((t) => t.name === defaultTenantName);
 
-      if (existingTenantQuery && existingTenantQuery.length > 0) {
+      if (existingTenant) {
         this.logger.log(`Default tenant already exists: ${defaultTenantName}`);
-        return existingTenantQuery[0];
+        return existingTenant;
       }
 
-      // Generate UUID in JavaScript
-      const tenantId = uuidv4();
+      // Create the tenant using the service
+      const newTenant = await this.tenantsService.create({
+        name: defaultTenantName,
+        description: "Default organization for the system",
+        isActive: true,
+      });
 
-      // Create tenant with a simple query
-      const result = await this.tenantRepository.query(
-        `INSERT INTO tenants (id, name, slug, "isActive", "createdAt", "updatedAt") 
-         VALUES ($1, $2, $3, true, NOW(), NOW()) 
-         ON CONFLICT (name) DO UPDATE SET "updatedAt" = NOW() 
-         RETURNING id, name`,
-        [tenantId, defaultTenantName, defaultTenantSlug],
-      );
-
-      if (result && result.length > 0) {
-        this.logger.log(`Default tenant created: ${defaultTenantName}`);
-        return result[0];
-      }
-
-      throw new Error(`Could not create default tenant: ${defaultTenantName}`);
+      this.logger.log(`Default tenant created: ${defaultTenantName}`);
+      return newTenant;
     } catch (error: unknown) {
       this.logger.error(
         `Failed to seed default tenant: ${error instanceof Error ? error.message : String(error)}`,
@@ -92,44 +75,29 @@ export class DatabaseSeeder implements OnModuleInit {
     }
   }
 
-  private async seedDefaultAdmin(tenant: Tenant): Promise<void> {
+  private async seedDefaultAdmin(tenant) {
     const defaultEmail = "superadmin@superadmin.com";
     const defaultName = "Super Admin";
-    const defaultRole = "SUPER_ADMIN"; // Single role as enum value
     const defaultPassword = "tmY8!R>d:;y5+B{q"; // Default password for admin
 
     try {
-      // First check if user exists using a simple query
-      const existingUserQuery = await this.userRepository.query(
-        `SELECT id, email FROM users WHERE email = $1 LIMIT 1`,
-        [defaultEmail],
-      );
+      // Check if user exists
+      const existingUser = await this.usersService.findByEmail(defaultEmail);
 
-      if (existingUserQuery && existingUserQuery.length > 0) {
+      if (existingUser) {
         this.logger.log(`Default admin user already exists: ${defaultEmail}`);
         return;
       }
 
-      // Generate UUID in JavaScript
-      const userId = uuidv4();
-
-      // Hash the password
-      const hashedPassword = await bcrypt.hash(defaultPassword, 10);
-
-      // Create user with a simple query that matches the actual database schema
-      await this.userRepository.query(
-        `INSERT INTO users (id, email, name, role, password, "tenantId", "isActive", "createdAt", "updatedAt") 
-         VALUES ($1, $2, $3, $4, $5, $6, true, NOW(), NOW()) 
-         ON CONFLICT (email) DO NOTHING`,
-        [
-          userId,
-          defaultEmail,
-          defaultName,
-          defaultRole,
-          hashedPassword,
-          tenant.id,
-        ],
-      );
+      // Create user using the service
+      await this.usersService.create({
+        email: defaultEmail,
+        name: defaultName,
+        password: defaultPassword,
+        role: UserRole.SUPER_ADMIN,
+        tenantId: tenant.id,
+        isActive: true,
+      });
 
       this.logger.log(
         `Default admin user created: ${defaultEmail} with password: ${defaultPassword}`,

@@ -22,18 +22,23 @@
     "db:up": "docker-compose up -d",
     "db:down": "docker-compose down",
     "db:reset": "docker-compose down -v && docker-compose up -d",
+    "db:seed": "cd packages/database && npm run db:seed",
+    "db:reinit": "npm run db:reset && sleep 5 && docker exec -it supply-chain-postgres bash -c \"psql -U postgres -c 'DROP DATABASE IF EXISTS supply_chain;' && psql -U postgres -c 'CREATE DATABASE supply_chain;'\" && cd packages/database && npm run db:migrate && npm run db:seed",
     "prepare": "husky install"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "@types/uuid": "^10.0.0",
+    "bcrypt": "^5.1.1",
     "concurrently": "^8.2.2",
     "eslint": "^8.0.0",
     "husky": "^8.0.0",
     "lint-staged": "^15.4.3",
     "prettier": "^3.0.0",
+    "ts-node": "^10.9.2",
     "tsup": "^8.4.0",
     "turbo": "^2.4.4",
     "typescript": "^5.0.0"
@@ -47,7 +52,6 @@
     "@nestjs/core": "^11.0.11",
     "@nestjs/platform-express": "^11.0.11",
     "@nestjs/swagger": "^7.3.0",
-    "@nestjs/typeorm": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/throttler": "^5.1.0"
@@ -59,6 +63,7 @@
     "@nestjs/platform-fastify": "^10.4.15",
     "@types/cookie-parser": "^1.4.8",
     "cookie-parser": "^1.4.7",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^3.24.2"
   }
 }

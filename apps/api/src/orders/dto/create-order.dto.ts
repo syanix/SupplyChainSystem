@@ -91,6 +91,30 @@ export class CreateOrderDto {
   @IsOptional()
   supplierOrderReference?: string;
 
+  @ApiPropertyOptional({ description: "Tax amount", type: Number, default: 0 })
+  @IsNumber()
+  @IsOptional()
+  taxAmount?: number = 0;
+
+  @ApiPropertyOptional({
+    description: "Shipping cost",
+    type: Number,
+    default: 0,
+  })
+  @IsNumber()
+  @IsOptional()
+  shippingCost?: number = 0;
+
+  @ApiPropertyOptional({ description: "Customer ID" })
+  @IsUUID()
+  @IsOptional()
+  customerId?: string;
+
+  @ApiProperty({ description: "Supplier ID" })
+  @IsUUID()
+  @IsNotEmpty()
+  supplierId: string;
+
   @ApiProperty({ type: [CreateOrderItemDto], description: "Order items" })
   @IsArray()
   @ValidateNested({ each: true })

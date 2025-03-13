@@ -1,147 +1,174 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { User } from "./entities/user.entity";
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  BadRequestException,
+} from "@nestjs/common";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
+import { UserRole, User } from "@supply-chain-system/shared";
+import {
+  IUserRepository,
+  USER_REPOSITORY,
+} from "./repositories/user.repository.interface";
+
+// Type for user response without password
+type UserResponse = Omit<User, "password">;
 
 @Injectable()
 export class UsersService {
   constructor(
-    @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    @Inject(USER_REPOSITORY)
+    private userRepository: IUserRepository,
   ) {}
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-
-    const user = this.usersRepository.create({
-      id: uuidv4(),
-      ...createUserDto,
-      password: hashedPassword, // Use the hashed password
-    });
-    return this.usersRepository.save(user);
+  /**
+   * Find all users, optionally filtered by tenant
+   */
+  async findAll(tenantId?: string): Promise<UserResponse[]> {
+    const users = await this.userRepository.findAll(tenantId);
+    return users.map(this.excludePassword);
   }
 
-  async findAll(tenantId: string): Promise<User[]> {
-    return this.usersRepository.find({
-      where: { tenantId },
-      order: { name: "ASC" },
-    });
-  }
-
+  /**
+   * Find users by various filters
+   */
   async findAllUsers(options?: {
-    role?: string;
+    role?: UserRole;
     isActive?: boolean;
     tenantId?: string;
-  }): Promise<User[]> {
-    try {
-      const queryBuilder = this.usersRepository
-        .createQueryBuilder("user")
-        .leftJoinAndSelect("user.tenant", "tenant")
-        .orderBy("user.name", "ASC");
-
-      // Apply filters if provided
-      if (options) {
-        if (options.role) {
-          queryBuilder.andWhere("user.role = :role", { role: options.role });
-        }
-
-        if (options.isActive !== undefined) {
-          queryBuilder.andWhere("user.isActive = :isActive", {
-            isActive: options.isActive,
-          });
-        }
-
-        if (options.tenantId) {
-          queryBuilder.andWhere("user.tenantId = :tenantId", {
-            tenantId: options.tenantId,
-          });
-        }
-      }
-
-      return queryBuilder.getMany();
-    } catch (error) {
-      console.error("Error fetching all users:", error);
-      // If the tenant relation fails, try without it
-      return this.usersRepository.find({
-        order: { name: "ASC" },
-      });
-    }
+  }): Promise<UserResponse[]> {
+    const users = await this.userRepository.findByFilters(options || {});
+    return users.map(this.excludePassword);
   }
 
-  async findOne(id: string): Promise<User> {
-    try {
-      const user = await this.usersRepository.findOne({
-        where: { id },
-        relations: ["tenant"],
-      });
+  /**
+   * Find a user by ID, with optional tenant filtering
+   * @throws NotFoundException if user not found
+   */
+  async findOne(id: string, tenantId?: string): Promise<UserResponse> {
+    const user = await this.userRepository.findById(id, tenantId);
 
-      if (!user) {
-        throw new NotFoundException(`User with ID ${id} not found`);
-      }
-
-      return user;
-    } catch (error) {
-      console.error(`Error fetching user with ID ${id}:`, error);
-      // If the tenant relation fails, try without it
-      const user = await this.usersRepository.findOne({ where: { id } });
-
-      if (!user) {
-        throw new NotFoundException(`User with ID ${id} not found`);
-      }
-
-      return user;
-    }
-  }
-
-  async findOneWithTenant(id: string): Promise<User> {
-    try {
-      const user = await this.usersRepository.findOne({
-        where: { id },
-        relations: ["tenant"],
-      });
-
-      if (!user) {
-        throw new NotFoundException(`User with ID ${id} not found`);
-      }
-
-      return user;
-    } catch (error) {
-      console.error(`Error fetching user with tenant, ID ${id}:`, error);
-      return this.findOne(id);
-    }
-  }
-
-  async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepository.findOne({
-      where: { email },
-      relations: ["tenant"],
-    });
-  }
-
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const user = await this.findOne(id);
-
-    // If password is provided, hash it
-    if (updateUserDto.password) {
-      updateUserDto.password = await bcrypt.hash(updateUserDto.password, 10);
-    }
-
-    // Update user properties
-    Object.assign(user, updateUserDto);
-
-    return this.usersRepository.save(user);
-  }
-
-  async remove(id: string): Promise<void> {
-    const result = await this.usersRepository.delete(id);
-
-    if (result.affected === 0) {
+    if (!user) {
       throw new NotFoundException(`User with ID ${id} not found`);
     }
+
+    return this.excludePassword(user);
+  }
+
+  /**
+   * Find a user by ID and include tenant information
+   * @throws NotFoundException if user not found
+   */
+  async findOneWithTenant(id: string): Promise<UserResponse> {
+    const user = await this.userRepository.findByIdWithTenant(id);
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return this.excludePassword(user);
+  }
+
+  /**
+   * Find a user by email
+   */
+  async findByEmail(email: string): Promise<UserResponse | null> {
+    const user = await this.userRepository.findByEmail(email);
+    return user ? this.excludePassword(user) : null;
+  }
+
+  /**
+   * Get a user with password for authentication purposes
+   * @internal Used only by auth service
+   */
+  async getUserWithPasswordByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findByEmail(email);
+  }
+
+  /**
+   * Create a new user
+   */
+  async create(
+    createUserDto: CreateUserDto,
+    tenantId?: string,
+  ): Promise<UserResponse> {
+    // Hash the password before saving
+    const hashedPassword = await this.hashPassword(createUserDto.password);
+
+    const user = await this.userRepository.create({
+      email: createUserDto.email,
+      name: createUserDto.name,
+      password: hashedPassword,
+      role: createUserDto.role,
+      isActive: createUserDto.isActive,
+      tenantId: tenantId || createUserDto.tenantId,
+    });
+
+    return this.excludePassword(user);
+  }
+
+  /**
+   * Update an existing user
+   * @throws NotFoundException if user not found
+   */
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    tenantId?: string,
+  ): Promise<UserResponse> {
+    // If password is provided, hash it
+    if (updateUserDto.password) {
+      updateUserDto.password = await this.hashPassword(updateUserDto.password);
+    }
+
+    try {
+      const updatedUser = await this.userRepository.update(
+        id,
+        updateUserDto,
+        tenantId,
+      );
+      return this.excludePassword(updatedUser);
+    } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new BadRequestException(
+        `Failed to update user: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
+    }
+  }
+
+  /**
+   * Delete a user
+   * @throws NotFoundException if user not found
+   */
+  async remove(id: string, tenantId?: string): Promise<void> {
+    // Verify user exists
+    await this.findOne(id, tenantId);
+
+    await this.userRepository.delete(id);
+  }
+
+  /**
+   * Hash a password using bcrypt
+   * @private
+   */
+  private async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, 10);
+  }
+
+  /**
+   * Exclude password from user object
+   * @private
+   */
+  private excludePassword(user: User): UserResponse {
+    // Destructure and rename to avoid unused variable warning
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...userWithoutPassword } = user as User & {
+      password: string;
+    };
+    return userWithoutPassword;
   }
 }

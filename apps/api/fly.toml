@@ -2,21 +2,15 @@ app = "supply-chain-system-api"
 primary_region = "syd"
 
 [build]
-  builder = "heroku/buildpacks:20"
-  buildpacks = ["heroku/nodejs"]
-  [build.args]
-    NODE_VERSION = "20"
-    BUILD_COMMAND = "npm run build:all"
-    PROJECT_PATH = "apps/api"
+  dockerfile = "Dockerfile"
 
 [deploy]
-  release_command = "npm run migration:run"
   strategy = "rolling"
 
 [env]
   NODE_ENV = "production"
   PORT = "3001"
-  NPM_CONFIG_PRODUCTION = "true"
+  # DATABASE_URL will be set via fly secrets
 
 [http_service]
   internal_port = 3001
@@ -34,15 +28,11 @@ primary_region = "syd"
     path = "/health"
     protocol = "http"
 
-[processes]
-  app = "npm run start:prod"
+[experimental]
+  auto_rollback = true
 
 [deploy.github]
   enabled = true
   repo = "syanix/SupplyChainSystem"
   branch = "main"
-  auto_deploy = false
-
-[experimental]
-  enable_monorepo = true
-  auto_rollback = true 
+  auto_deploy = false 

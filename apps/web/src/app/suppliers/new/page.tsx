@@ -6,6 +6,7 @@ import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { Layout } from '@supply-chain-system/ui';
 import SupplierForm from '../components/SupplierForm';
+import { CreateSupplierRequest, UpdateSupplierRequest } from '../api/suppliers.api';
 
 export default function NewSupplierPage() {
   const router = useRouter();
@@ -23,11 +24,16 @@ export default function NewSupplierPage() {
     return <div className="p-4">Loading...</div>;
   }
 
-  const handleSubmit = async (formData: any) => {
+  const handleSubmit = async (formData: CreateSupplierRequest | UpdateSupplierRequest) => {
     setLoading(true);
     setError(null);
 
     try {
+      // For new suppliers, we need to ensure required fields are present
+      if (!('name' in formData && formData.name)) {
+        throw new Error('Supplier name is required');
+      }
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/suppliers`, {
         method: 'POST',
         headers: {
