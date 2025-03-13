@@ -22,22 +22,16 @@ import { AdminModule } from "./admin/admin.module";
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const dbUrl = configService.get<string>("DATABASE_URL");
-
-        return {
-          type: "postgres",
-          url: dbUrl,
-          entities: [__dirname + "/**/*.entity{.ts,.js}"],
-          synchronize: false, // Disable automatic schema synchronization
-          ssl: configService.get("NODE_ENV") === "production",
-          autoLoadEntities: true,
-          logging: ["error", "query"], // Log only errors and queries
-          retryAttempts: 5,
-          retryDelay: 3000,
-          keepConnectionAlive: true,
-        };
-      },
+      useFactory: (configService: ConfigService) => ({
+        type: "postgres",
+        url: configService.get("DATABASE_URL"),
+        entities: [__dirname + "/**/*.entity{.ts,.js}"],
+        synchronize: configService.get("NODE_ENV") !== "production",
+        ssl:
+          configService.get("NODE_ENV") === "production"
+            ? { rejectUnauthorized: false }
+            : false,
+      }),
     }),
 
     // Rate limiting

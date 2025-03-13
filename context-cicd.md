@@ -56,6 +56,21 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### TypeORM Dependency Fix (2023-11-21)
+
+We've resolved a critical NestJS dependency injection error that was preventing the API from starting:
+
+1. **Issue**: The application was failing with `UnknownDependenciesException: Nest can't resolve dependencies of the TypeOrmCoreModule (TypeOrmModuleOptions, ?)`
+
+2. **Root Cause**: The error was caused by a version mismatch between NestJS core packages and TypeORM integration after upgrading to NestJS v11.
+
+3. **Solution**: Updated the TypeOrmModule configuration in app.module.ts:
+   - Simplified the TypeORM configuration to use a more compatible format
+   - Added proper SSL configuration for production environments
+   - Ensured proper entity loading
+
+This fix ensures that the API can properly connect to the database and start successfully, resolving the deployment failures.
+
 ### Environment Variable Handling (2023-11-20)
 
 We've clarified how environment variables are handled in our deployment process:
