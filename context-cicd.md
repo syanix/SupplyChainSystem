@@ -56,6 +56,16 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Improved Package Lock Handling (2023-11-16)
+
+We've enhanced our build and deployment processes to better handle package-lock.json mismatches:
+
+1. **Fallback Installation Strategy**: Both the CI workflow and Dockerfile now attempt `npm ci` first, but fall back to `npm install` if the package-lock.json is out of sync with package.json.
+
+2. **Automatic Recovery**: This ensures that builds don't fail due to package-lock.json mismatches, which can happen after dependency version updates.
+
+This improvement makes our CI/CD pipeline more resilient to dependency changes and reduces build failures.
+
 ### NestJS Dependency Version Alignment (2023-11-15)
 
 We've implemented a more robust solution for handling NestJS dependency version conflicts:

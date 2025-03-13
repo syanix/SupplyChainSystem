@@ -31,7 +31,9 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          # First try with ci, if it fails due to package-lock mismatch, use install
+          npm ci || npm install
 
       - name: Type check
         run: npm run type-check

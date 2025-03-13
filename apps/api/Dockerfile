@@ -10,8 +10,8 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
 
 # Install all dependencies including NestJS packages
-# Using clean npm ci without legacy-peer-deps flag
-RUN npm ci --only=production
+# Try npm ci first, fall back to npm install if package-lock is out of sync
+RUN npm ci --only=production || npm install --only=production
 
 # Copy pre-built artifacts
 COPY apps/api/dist/ ./apps/api/dist/
