@@ -56,6 +56,28 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Multi-Stage Deployment Workflows (2023-11-18)
+
+We've implemented a more flexible multi-stage deployment architecture:
+
+1. **Separated Deployment Workflows**: Created dedicated workflows for API and Web deployments:
+
+   - `deploy-api.yml`: Handles API deployment to Fly.io
+   - `deploy-web.yml`: Handles Web deployment to Vercel
+   - `deploy.yml`: Combined workflow that can trigger both deployments in parallel
+
+2. **Parallel Deployments**: API and Web deployments can now run in parallel, reducing overall deployment time.
+
+3. **Manual Triggering**: All deployments require manual triggering with explicit confirmation, preventing accidental deployments.
+
+4. **Selective Deployment**: The combined workflow allows selecting which components to deploy (API, Web, or both).
+
+5. **Environment Selection**: Each workflow supports deploying to either staging or production environments.
+
+6. **Artifact Flexibility**: Deployments can use artifacts from any successful build by specifying the run ID or build ID.
+
+This architecture provides greater control and flexibility over the deployment process while maintaining security and reliability.
+
 ### Security Enhancement: Credentials Management (2023-11-17)
 
 We've implemented a critical security improvement in how we handle sensitive credentials:
@@ -116,17 +138,34 @@ This approach ensures that all NestJS packages are consistently versioned throug
 
 ### API Deployment
 
-1. The build workflow creates a deployment package with all necessary files
-2. The deployment workflow downloads the package and extracts it
-3. The deployment workflow uses Fly.io CLI to deploy the API
-4. Health checks verify the deployment was successful
+The API deployment process now uses the `deploy-api.yml` workflow:
 
-### Frontend Deployment
+1. **Manual Trigger**: The workflow is manually triggered with required confirmation.
+2. **Environment Selection**: The target environment (staging or production) is specified.
+3. **Artifact Selection**: The build artifacts to deploy are selected (latest or specific build).
+4. **Deployment**: The API is deployed to Fly.io using the appropriate configuration.
+5. **Verification**: Health checks verify the deployment was successful.
+6. **Rollback**: Automatic rollback occurs if verification fails.
 
-1. The build workflow creates a deployment package with pre-built Next.js artifacts
-2. The deployment workflow downloads the package and extracts it
-3. The deployment workflow uses Vercel CLI to deploy the frontend with the `--prebuilt` flag
-4. The deployment is automatically available at the Vercel URL
+### Web Deployment
+
+The Web deployment process now uses the `deploy-web.yml` workflow:
+
+1. **Manual Trigger**: The workflow is manually triggered with required confirmation.
+2. **Environment Selection**: The target environment (staging or production) is specified.
+3. **Artifact Selection**: The build artifacts to deploy are selected (latest or specific build).
+4. **Deployment**: The Web frontend is deployed to Vercel using the `--prebuilt` flag.
+5. **Verification**: Health checks verify the deployment was successful.
+
+### Combined Deployment
+
+The combined deployment process uses the `deploy.yml` workflow:
+
+1. **Manual Trigger**: The workflow is manually triggered with required confirmation.
+2. **Component Selection**: The components to deploy (API, Web, or both) are selected.
+3. **Environment Selection**: The target environment (staging or production) is specified.
+4. **Parallel Execution**: Selected deployment workflows are triggered in parallel.
+5. **Independent Verification**: Each deployment is independently verified.
 
 ## Environment Configuration
 

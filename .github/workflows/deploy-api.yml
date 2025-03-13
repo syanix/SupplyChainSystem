@@ -1,0 +1,186 @@
+name: Deploy API to Fly.io
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+      run_id:
+        description: "GitHub Actions run ID containing the artifacts (optional)"
+        required: false
+        type: string
+      build_id:
+        description: "Build ID to deploy (optional)"
+        required: false
+        type: string
+      confirm:
+        description: 'Type "yes" to confirm deployment'
+        required: true
+        type: string
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check confirmation
+        if: ${{ inputs.confirm != 'yes' }}
+        run: |
+          echo "Deployment not confirmed. Please set confirm input to 'yes' to proceed."
+          exit 1
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Find latest successful build workflow run
+        if: ${{ inputs.run_id == '' }}
+        id: find_build
+        run: |
+          # Find the latest successful build workflow run
+          LATEST_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1" | \
+            jq -r '.workflow_runs[0].id')
+
+          if [ "$LATEST_RUN_ID" == "null" ]; then
+            echo "No successful build workflow run found."
+            exit 1
+          fi
+
+          echo "Found latest successful build workflow run: $LATEST_RUN_ID"
+          echo "run_id=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Set run ID
+        id: set_run_id
+        run: |
+          if [ "${{ inputs.run_id }}" != "" ]; then
+            echo "Using provided run ID: ${{ inputs.run_id }}"
+            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+          else
+            echo "Using latest successful build run ID: ${{ steps.find_build.outputs.run_id }}"
+            echo "run_id=${{ steps.find_build.outputs.run_id }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download build info
+        uses: actions/download-artifact@v4
+        with:
+          name: build-info
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.set_run_id.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./
+
+      - name: Set build ID
+        id: set_build_id
+        run: |
+          if [ "${{ inputs.build_id }}" != "" ]; then
+            echo "Using provided build ID: ${{ inputs.build_id }}"
+            echo "build_id=${{ inputs.build_id }}" >> $GITHUB_OUTPUT
+          elif [ -f "build-info.json" ]; then
+            BUILD_ID=$(jq -r '.build_id' build-info.json)
+            echo "Using build ID from build-info.json: $BUILD_ID"
+            echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
+          else
+            echo "Using run ID as build ID: ${{ steps.set_run_id.outputs.run_id }}"
+            echo "build_id=${{ steps.set_run_id.outputs.run_id }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download API deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: api-deployment
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.set_run_id.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./
+
+      - name: Extract API deployment artifact
+        run: |
+          mkdir -p deploy-api
+          tar -xzf api-deployment.tar.gz -C deploy-api
+          ls -la deploy-api
+
+      - name: Setup Flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@1.4
+
+      - name: Deploy to Fly.io
+        id: deploy
+        run: |
+          cd deploy-api
+
+          # Determine which config file to use based on environment
+          if [ "${{ inputs.environment }}" == "production" ]; then
+            CONFIG_FILE="fly.production.toml"
+            echo "Deploying to production environment"
+          else
+            CONFIG_FILE="fly.staging.toml"
+            echo "Deploying to staging environment"
+          fi
+
+          # Deploy using the appropriate config file
+          echo "Using config file: $CONFIG_FILE"
+          flyctl deploy --config $CONFIG_FILE --remote-only
+
+          # Get the deployed app name from the config file
+          APP_NAME=$(grep "app =" $CONFIG_FILE | cut -d '"' -f 2 || grep "app =" $CONFIG_FILE | cut -d "=" -f 2 | tr -d ' ')
+          echo "Deployed app: $APP_NAME"
+
+          # Store the app name for later use
+          echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT
+
+      - name: Verify Deployment
+        run: |
+          APP_NAME="${{ steps.deploy.outputs.app_name }}"
+          echo "Verifying deployment for app: $APP_NAME"
+
+          # Wait for the app to be ready
+          echo "Waiting for the app to be ready..."
+          sleep 10
+
+          # Check the health endpoint
+          MAX_RETRIES=6
+          RETRY_COUNT=0
+          HEALTH_URL="https://$APP_NAME.fly.dev/health"
+
+          echo "Checking health endpoint: $HEALTH_URL"
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL || echo "failed")
+            
+            if [ "$HTTP_STATUS" == "200" ]; then
+              echo "Health check passed! Application is running."
+              exit 0
+            else
+              echo "Health check failed with status: $HTTP_STATUS. Retrying in 10 seconds..."
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              sleep 10
+            fi
+          done
+
+          echo "Health check failed after $MAX_RETRIES attempts."
+          echo "Deployment verification failed. Consider rolling back."
+          exit 1
+
+      - name: Rollback on Failure
+        if: failure() && steps.deploy.outcome == 'success'
+        run: |
+          cd deploy-api
+
+          # Determine which config file to use based on environment
+          if [ "${{ inputs.environment }}" == "production" ]; then
+            CONFIG_FILE="fly.production.toml"
+          else
+            CONFIG_FILE="fly.staging.toml"
+          fi
+
+          # Get the app name from the config file
+          APP_NAME=$(grep "app =" $CONFIG_FILE | cut -d '"' -f 2 || grep "app =" $CONFIG_FILE | cut -d "=" -f 2 | tr -d ' ')
+
+          echo "Rolling back deployment for app: $APP_NAME"
+          flyctl deploy rollback --app $APP_NAME

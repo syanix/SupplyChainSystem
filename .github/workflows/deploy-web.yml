@@ -1,0 +1,151 @@
+name: Deploy Web to Vercel
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Environment to deploy to"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+      run_id:
+        description: "GitHub Actions run ID containing the artifacts (optional)"
+        required: false
+        type: string
+      build_id:
+        description: "Build ID to deploy (optional)"
+        required: false
+        type: string
+      confirm:
+        description: 'Type "yes" to confirm deployment'
+        required: true
+        type: string
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check confirmation
+        if: ${{ inputs.confirm != 'yes' }}
+        run: |
+          echo "Deployment not confirmed. Please set confirm input to 'yes' to proceed."
+          exit 1
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Find latest successful build workflow run
+        if: ${{ inputs.run_id == '' }}
+        id: find_build
+        run: |
+          # Find the latest successful build workflow run
+          LATEST_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1" | \
+            jq -r '.workflow_runs[0].id')
+
+          if [ "$LATEST_RUN_ID" == "null" ]; then
+            echo "No successful build workflow run found."
+            exit 1
+          fi
+
+          echo "Found latest successful build workflow run: $LATEST_RUN_ID"
+          echo "run_id=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Set run ID
+        id: set_run_id
+        run: |
+          if [ "${{ inputs.run_id }}" != "" ]; then
+            echo "Using provided run ID: ${{ inputs.run_id }}"
+            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
+          else
+            echo "Using latest successful build run ID: ${{ steps.find_build.outputs.run_id }}"
+            echo "run_id=${{ steps.find_build.outputs.run_id }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download build info
+        uses: actions/download-artifact@v4
+        with:
+          name: build-info
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.set_run_id.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./
+
+      - name: Set build ID
+        id: set_build_id
+        run: |
+          if [ "${{ inputs.build_id }}" != "" ]; then
+            echo "Using provided build ID: ${{ inputs.build_id }}"
+            echo "build_id=${{ inputs.build_id }}" >> $GITHUB_OUTPUT
+          elif [ -f "build-info.json" ]; then
+            BUILD_ID=$(jq -r '.build_id' build-info.json)
+            echo "Using build ID from build-info.json: $BUILD_ID"
+            echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
+          else
+            echo "Using run ID as build ID: ${{ steps.set_run_id.outputs.run_id }}"
+            echo "build_id=${{ steps.set_run_id.outputs.run_id }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Download Web deployment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-deployment
+          repository: ${{ github.repository }}
+          run-id: ${{ steps.set_run_id.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: ./
+
+      - name: Extract Web deployment artifact
+        run: |
+          mkdir -p deploy-web
+          tar -xzf web-deployment.tar.gz -C deploy-web
+          ls -la deploy-web
+
+      - name: Deploy to Vercel
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./deploy-web
+          vercel-args: "--prebuilt ${{ inputs.environment == 'production' && '--prod' || '' }}"
+
+      - name: Verify Deployment
+        run: |
+          DEPLOYMENT_URL="${{ steps.deploy.outputs.preview-url }}"
+          if [ "${{ inputs.environment }}" == "production" ]; then
+            DEPLOYMENT_URL="${{ steps.deploy.outputs.production-url }}"
+          fi
+
+          echo "Verifying deployment at URL: $DEPLOYMENT_URL"
+
+          # Wait for the app to be ready
+          echo "Waiting for the app to be ready..."
+          sleep 10
+
+          # Check the health endpoint
+          MAX_RETRIES=6
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" $DEPLOYMENT_URL || echo "failed")
+            
+            if [ "$HTTP_STATUS" == "200" ]; then
+              echo "Health check passed! Application is running."
+              exit 0
+            else
+              echo "Health check failed with status: $HTTP_STATUS. Retrying in 10 seconds..."
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              sleep 10
+            fi
+          done
+
+          echo "Health check failed after $MAX_RETRIES attempts."
+          echo "Deployment verification failed."
+          exit 1
