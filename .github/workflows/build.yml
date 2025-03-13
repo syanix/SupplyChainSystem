@@ -68,12 +68,19 @@ jobs:
           cp apps/api/package.json deploy-api/apps/api/
           cd deploy-api
 
+          # Temporarily modify package.json to remove husky and fix Node.js version requirement
+          echo "Modifying package.json to remove husky and fix Node.js version..."
+          jq 'del(.scripts.prepare) | if has("engines") then .engines.node = ">=20.0.0" else . + {"engines":{"node":">=20.0.0"}} end' package.json > package.json.tmp
+          mv package.json.tmp package.json
+          jq 'if has("engines") then .engines.node = ">=20.0.0" else . + {"engines":{"node":">=20.0.0"}} end' apps/api/package.json > apps/api/package.json.tmp
+          mv apps/api/package.json.tmp apps/api/package.json
+
           # Install only production dependencies needed by the API
-          npm ci --production --omit=dev
+          npm ci --production --omit=dev --no-audit --no-fund
 
           # Analyze and prune unnecessary packages (optional but recommended)
           echo "Pruning unnecessary packages..."
-          npx depcheck --ignores="typescript,@types/*" --json | jq -r '.dependencies[]' | xargs -r npm uninstall
+          npx depcheck --ignores="typescript,@types/*,husky" --json | jq -r '.dependencies[]' | xargs -r npm uninstall
 
           # Compress node_modules to reduce artifact size
           echo "Compressing node_modules..."

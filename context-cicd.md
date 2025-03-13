@@ -56,6 +56,11 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Fixed deployment artifact creation issues:
+  - Removed husky git hooks from deployment package
+  - Modified Node.js version requirements to be compatible with CI environment
+  - Added flags to npm to skip audit and funding messages
+  - This resolves the "husky install" error during deployment artifact creation
 - Optimized node_modules for API runtime:
   - Now creates a minimal node_modules with only API runtime dependencies
   - Added dependency analysis to prune unnecessary packages
