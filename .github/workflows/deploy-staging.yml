@@ -7,6 +7,9 @@ on:
         description: 'Type "yes" to confirm deployment to staging'
         required: true
         default: "no"
+      build_id:
+        description: "Build ID to deploy (leave empty for latest successful build)"
+        required: false
 
 jobs:
   validate:
@@ -18,75 +21,57 @@ jobs:
           echo "Deployment not confirmed. Please type 'yes' to confirm."
           exit 1
 
-  code-quality:
-    needs: validate
-    name: Code Quality
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 20
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Type check
-        run: npm run type-check
-
-      - name: Lint code
-        run: npm run lint
-
-      - name: Check formatting
-        run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
-
   deploy-staging:
-    needs: code-quality
+    needs: validate
     runs-on: ubuntu-latest
     environment: staging
     steps:
-      - name: Checkout code
+      - name: Checkout code for configuration
         uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
         with:
-          node-version: 20
-          cache: "npm"
+          sparse-checkout: |
+            .github
+          sparse-checkout-cone-mode: false
 
-      - name: Install dependencies
-        run: npm ci
+      # Download build info to get the latest build ID if not specified
+      - name: Download build info
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build.yml
+          name: build-info
+          path: .
+          if_no_artifact_found: warn
+        if: github.event.inputs.build_id == ''
 
-        # Build packages first to ensure types are available
-      - name: Build dependency packages
-        run: npm run build:packages
-
-      - name: Build
-        run: npm run build
-
-      # Create deployment artifact directory
-      - name: Prepare deployment artifacts
+      # Set the build ID
+      - name: Set build ID
+        id: set_build_id
         run: |
-          mkdir -p deploy/apps/api/dist
-          mkdir -p deploy/packages/database/dist
-          mkdir -p deploy/packages/shared/dist
-          mkdir -p deploy/packages/ui/dist
+          if [ -n "${{ github.event.inputs.build_id }}" ]; then
+            echo "BUILD_ID=${{ github.event.inputs.build_id }}" >> $GITHUB_ENV
+            echo "Using specified build ID: ${{ github.event.inputs.build_id }}"
+          elif [ -f "build-info.json" ]; then
+            BUILD_ID=$(jq -r '.build_id' build-info.json)
+            echo "BUILD_ID=$BUILD_ID" >> $GITHUB_ENV
+            echo "Using latest build ID: $BUILD_ID"
+          else
+            echo "No build ID specified and no build info found. Please specify a build ID."
+            exit 1
+          fi
 
-          # Copy necessary files
-          cp -r apps/api/dist/* deploy/apps/api/dist/
-          cp -r packages/database/dist/* deploy/packages/database/dist/
-          cp -r packages/shared/dist/* deploy/packages/shared/dist/
-          cp -r packages/ui/dist/* deploy/packages/ui/dist/
-          cp apps/api/Dockerfile deploy/
-          cp apps/api/package.json deploy/apps/api/
-          cp packages/database/package.json deploy/packages/database/
-          cp packages/shared/package.json deploy/packages/shared/
-          cp packages/ui/package.json deploy/packages/ui/
-          cp package.json deploy/
+      # Download API deployment artifact
+      - name: Download API deployment artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: api-deployment
+          path: .
+
+      # Extract API deployment package
+      - name: Extract API deployment package
+        run: |
+          mkdir -p deploy-api
+          unzip -o api-deployment.zip -d deploy-api
+          ls -la deploy-api
 
       # Install Fly CLI
       - name: Setup Flyctl
@@ -95,17 +80,31 @@ jobs:
       # Deploy to Fly.io
       - name: Deploy API to Fly.io (Staging)
         run: |
-          cd deploy
-          flyctl deploy --config ../apps/api/fly.staging.toml --remote-only
+          cd deploy-api
+          flyctl deploy --config fly.staging.toml --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      # Download Web deployment artifact
+      - name: Download Web deployment artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: web-deployment
+          path: .
+
+      # Extract Web deployment package
+      - name: Extract Web deployment package
+        run: |
+          mkdir -p deploy-web
+          unzip -o web-deployment.zip -d deploy-web
+          ls -la deploy-web
+
+      # Deploy to Vercel
       - name: Deploy Web to Vercel (Staging)
         uses: amondnet/vercel-action@v20
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
           vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./apps/web
-          root-directory: .
+          working-directory: ./deploy-web
           vercel-args: "--prod --prebuilt"

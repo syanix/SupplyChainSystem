@@ -1,0 +1,209 @@
+name: Build Application
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Check formatting
+        run: npx prettier --check "**/*.{js,jsx,ts,tsx,json,md,css,scss}"
+
+      - name: Build dependency packages
+        run: npm run build:packages
+
+      - name: Build
+        run: npm run build
+
+      # Create deployment artifact directory
+      - name: Prepare API deployment artifacts
+        run: |
+          mkdir -p deploy-api/apps/api/dist
+          mkdir -p deploy-api/packages/database/dist
+          mkdir -p deploy-api/packages/shared/dist
+          mkdir -p deploy-api/packages/ui/dist
+          mkdir -p deploy-api/node_modules
+
+          # Copy necessary files
+          cp -r apps/api/dist/* deploy-api/apps/api/dist/
+          cp -r packages/database/dist/* deploy-api/packages/database/dist/
+          cp -r packages/shared/dist/* deploy-api/packages/shared/dist/
+          cp -r packages/ui/dist/* deploy-api/packages/ui/dist/
+          cp -r node_modules/* deploy-api/node_modules/
+          cp apps/api/Dockerfile deploy-api/Dockerfile
+          cp apps/api/package.json deploy-api/apps/api/
+          cp packages/database/package.json deploy-api/packages/database/
+          cp packages/shared/package.json deploy-api/packages/shared/
+          cp packages/ui/package.json deploy-api/packages/ui/
+          cp package.json deploy-api/
+
+          # Create production fly.toml
+          cat > deploy-api/fly.production.toml << EOL
+          app = "supply-chain-system-api"
+          primary_region = "syd"
+
+          [build]
+            dockerfile = "Dockerfile"
+
+          [env]
+            NODE_ENV = "production"
+            PORT = "3001"
+
+          [http_service]
+            internal_port = 3001
+            force_https = true
+            auto_stop_machines = true
+            auto_start_machines = true
+            min_machines_running = 1
+            processes = ["app"]
+            
+            [[http_service.checks]]
+              interval = "10s"
+              timeout = "2s"
+              grace_period = "5s"
+              method = "get"
+              path = "/health"
+              protocol = "http"
+
+          [processes]
+            app = "node dist/main.js"
+          EOL
+
+          # Create staging fly.toml
+          cat > deploy-api/fly.staging.toml << EOL
+          app = "supply-chain-system-api-staging"
+          primary_region = "syd"
+
+          [build]
+            dockerfile = "Dockerfile"
+
+          [env]
+            NODE_ENV = "staging"
+            PORT = "3001"
+
+          [http_service]
+            internal_port = 3001
+            force_https = true
+            auto_stop_machines = true
+            auto_start_machines = true
+            min_machines_running = 0
+            processes = ["app"]
+            
+            [[http_service.checks]]
+              interval = "10s"
+              timeout = "2s"
+              grace_period = "5s"
+              method = "get"
+              path = "/health"
+              protocol = "http"
+
+          [processes]
+            app = "node dist/main.js"
+          EOL
+
+          # Create a README with deployment instructions
+          cat > deploy-api/README.md << EOL
+          # API Deployment Package
+
+          This package contains pre-built artifacts for the Supply Chain System API.
+
+          ## Deployment Instructions
+
+          ### For Production
+
+          \`\`\`bash
+          cd deploy-api
+          flyctl deploy --config fly.production.toml --remote-only
+          \`\`\`
+
+          ### For Staging
+
+          \`\`\`bash
+          cd deploy-api
+          flyctl deploy --config fly.staging.toml --remote-only
+          \`\`\`
+          EOL
+
+          # Zip the deployment package
+          cd deploy-api
+          zip -r ../api-deployment.zip .
+          cd ..
+
+      # Prepare Web deployment artifacts
+      - name: Prepare Web deployment artifacts
+        run: |
+          mkdir -p deploy-web
+          cp -r apps/web/.next deploy-web/
+          cp -r apps/web/public deploy-web/
+          cp apps/web/package.json deploy-web/
+          cp apps/web/next.config.js deploy-web/
+
+          # Create a README with deployment instructions
+          cat > deploy-web/README.md << EOL
+          # Web Deployment Package
+
+          This package contains pre-built artifacts for the Supply Chain System Web frontend.
+
+          ## Deployment Instructions
+
+          Deploy to Vercel using the \`--prebuilt\` flag:
+
+          \`\`\`bash
+          vercel --prod --prebuilt
+          \`\`\`
+          EOL
+
+          # Zip the deployment package
+          cd deploy-web
+          zip -r ../web-deployment.zip .
+          cd ..
+
+      # Upload API deployment artifact
+      - name: Upload API deployment artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: api-deployment
+          path: api-deployment.zip
+          retention-days: 7
+
+      # Upload Web deployment artifact
+      - name: Upload Web deployment artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-deployment
+          path: web-deployment.zip
+          retention-days: 7
+
+      # Create a build info file with metadata
+      - name: Create build info
+        run: |
+          echo "{\"build_id\": \"${{ github.run_id }}\", \"commit\": \"${{ github.sha }}\", \"timestamp\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" > build-info.json
+
+      # Upload build info
+      - name: Upload build info
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-info
+          path: build-info.json
+          retention-days: 30

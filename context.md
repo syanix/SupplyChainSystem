@@ -19,6 +19,18 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Separated build and deploy processes:
+  - Created a dedicated build workflow that runs on push to main and on-demand
+  - Build workflow creates deployment artifacts and uploads them to GitHub
+  - Deployment workflows download artifacts and deploy them to environments
+  - Added ability to specify which build to deploy via build ID
+  - This improves reliability and allows for promoting the same build across environments
+- Fixed Fly.io deployment with pre-built artifacts:
+  - Updated the deployment process to create a complete deployment directory
+  - Added node_modules copying to ensure all dependencies are available
+  - Created a custom fly.toml file directly in the deployment directory
+  - Simplified the deployment command to use the local configuration
+  - Fixed the Dockerfile to correctly reference the pre-built artifacts
 - Implemented pre-built artifacts deployment strategy:
   - Modified Dockerfile to use pre-built artifacts instead of building during deployment
   - Updated GitHub Actions workflows to build once and deploy the artifacts
