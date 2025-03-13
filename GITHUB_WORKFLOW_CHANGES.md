@@ -21,6 +21,7 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Husky prepare script is removed to prevent git hook installation errors
    - Packages are now included with their dist folders and necessary files
    - Prisma schema is copied and client is generated during the build process
+   - Prisma schema includes binary targets for both native and Alpine Linux environments
    - Proper directory structure is created before copying files
    - Simplified the directory structure for easier deployment
    - Correct file paths are used in all configuration files

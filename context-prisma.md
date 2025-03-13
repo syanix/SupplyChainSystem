@@ -599,12 +599,24 @@ We've made several improvements to the deployment process to ensure that all req
    - The `@prisma/client` is initialized correctly
    - No runtime errors occur due to missing Prisma client
 
-3. **Correct File Paths**: We've updated the file paths in the Dockerfile and fly.toml to use the correct path for the main.js file, ensuring that the application starts properly.
+3. **Prisma Binary Targets**: We've updated the schema.prisma file to include the correct binary targets for different environments:
 
-4. **Directory Structure**: We've improved the directory creation process to ensure all necessary directories exist before copying files. This prevents errors like "Not a directory" when copying files to nested paths.
+   ```prisma
+   generator client {
+     provider        = "prisma-client-js"
+     previewFeatures = ["multiSchema"]
+     binaryTargets   = ["native", "linux-musl-openssl-3.0.x"]
+   }
+   ```
 
-5. **Husky Removal**: We now remove the husky prepare script from the package.json file before installing dependencies. This prevents errors when running npm ci in a non-git environment, as husky tries to install git hooks.
+   This ensures that Prisma can run in both local development environments and in Alpine Linux-based containers (like those used by Fly.io).
 
-6. **OpenSSL for Prisma**: We've added OpenSSL to the Dockerfile to ensure that Prisma can function correctly in the Alpine Linux environment.
+4. **Correct File Paths**: We've updated the file paths in the Dockerfile and fly.toml to use the correct path for the main.js file, ensuring that the application starts properly.
+
+5. **Directory Structure**: We've improved the directory creation process to ensure all necessary directories exist before copying files. This prevents errors like "Not a directory" when copying files to nested paths.
+
+6. **Husky Removal**: We now remove the husky prepare script from the package.json file before installing dependencies. This prevents errors when running npm ci in a non-git environment, as husky tries to install git hooks.
+
+7. **OpenSSL for Prisma**: We've added OpenSSL to the Dockerfile to ensure that Prisma can function correctly in the Alpine Linux environment.
 
 These changes resolve issues with missing dependencies like `@prisma/client` and ensure that the application can start correctly in the Fly.io environment.

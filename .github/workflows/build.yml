@@ -75,7 +75,7 @@ jobs:
           cp -r ../packages/shared/dist/* packages/shared/dist/
           cp -r ../packages/ui/dist/* packages/ui/dist/
 
-          # Copy Prisma schema and generate client
+          # Copy Prisma schema and generate client with correct binary targets
           cp -r ../packages/database/prisma/* packages/database/prisma/
           cd packages/database
           npx prisma generate
