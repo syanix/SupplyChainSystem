@@ -8,7 +8,7 @@ COPY packages/database/dist/ ./packages/database/dist/
 COPY packages/shared/dist/ ./packages/shared/dist/
 COPY packages/ui/dist/ ./packages/ui/dist/
 
-# Copy only production node_modules (no dev dependencies)
+# Copy only the node_modules needed by the API
 COPY node_modules/ ./node_modules/
 
 # Set working directory to the API app

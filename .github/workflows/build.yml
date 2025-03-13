@@ -62,11 +62,18 @@ jobs:
           cp -r packages/shared/dist/* deploy-api/packages/shared/dist/
           cp -r packages/ui/dist/* deploy-api/packages/ui/dist/
 
-          # Create production-only node_modules
-          echo "Creating production-only node_modules..."
+          # Create minimal node_modules with only API runtime dependencies
+          echo "Creating minimal node_modules for API runtime..."
           cp package.json package-lock.json deploy-api/
+          cp apps/api/package.json deploy-api/apps/api/
           cd deploy-api
+
+          # Install only production dependencies needed by the API
           npm ci --production --omit=dev
+
+          # Analyze and prune unnecessary packages (optional but recommended)
+          echo "Pruning unnecessary packages..."
+          npx depcheck --ignores="typescript,@types/*" --json | jq -r '.dependencies[]' | xargs -r npm uninstall
 
           # Compress node_modules to reduce artifact size
           echo "Compressing node_modules..."

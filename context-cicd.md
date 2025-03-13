@@ -56,6 +56,11 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Optimized node_modules for API runtime:
+  - Now creates a minimal node_modules with only API runtime dependencies
+  - Added dependency analysis to prune unnecessary packages
+  - Significantly reduces Docker image size and improves security
+  - Eliminates unused dependencies from the deployment
 - Enhanced artifact compression for all deployment packages:
   - Switched from zip to tar.gz compression for all deployment artifacts
   - Compressed entire deployment packages, not just node_modules
