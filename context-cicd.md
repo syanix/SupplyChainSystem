@@ -18,8 +18,9 @@ The CI/CD pipeline automates testing, building, and deployment of the Supply Cha
 
 ### Build Workflow
 
-The build workflow runs on push to the main branch and can be triggered manually. It:
+The build workflow is manually triggered via `workflow_dispatch`. It:
 
+- Accepts an optional description parameter for the build
 - Performs code quality checks (linting, type checking, formatting)
 - Builds the application and packages
 - Creates deployment artifacts
@@ -52,6 +53,10 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Changed build workflow to manual trigger only:
+  - Removed automatic trigger on push to main branch
+  - Added optional description input parameter
+  - This gives more control over when builds are created
 - Fixed GitHub Actions artifact download permissions:
   - Added explicit `permissions` block with `actions: read` permission
   - Switched from `dawidd6/action-download-artifact@v2` to official `actions/download-artifact@v3`
