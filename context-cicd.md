@@ -56,121 +56,31 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
-- Fixed NestJS dependency issues in Fly.io deployment:
-  - Completely redesigned the Dockerfile to install dependencies during build
-  - Now properly includes all NestJS dependencies including @nestjs/config
-  - Removed the node_modules compression/decompression steps
-  - This resolves the "Cannot find module '@nestjs/config'" error
-- Fixed deployment artifact creation issues:
-  - Removed husky git hooks from deployment package
-  - Modified Node.js version requirements to be compatible with CI environment
-  - Added flags to npm to skip audit and funding messages
-  - This resolves the "husky install" error during deployment artifact creation
-- Optimized node_modules for API runtime:
-  - Now creates a minimal node_modules with only API runtime dependencies
-  - Added dependency analysis to prune unnecessary packages
-  - Significantly reduces Docker image size and improves security
-  - Eliminates unused dependencies from the deployment
-- Enhanced artifact compression for all deployment packages:
-  - Switched from zip to tar.gz compression for all deployment artifacts
-  - Compressed entire deployment packages, not just node_modules
-  - Significantly reduces artifact sizes (typically 60-80% smaller)
-  - Improves upload/download speeds and reduces GitHub Actions storage usage
-- Optimized artifact size with compression:
-  - Now compresses node_modules with tar/gzip during build
-  - Decompresses node_modules during deployment
-  - Significantly reduces artifact size and upload/download times
-  - Improves GitHub Actions storage efficiency
-- Optimized Dockerfile to eliminate npm install:
-  - Now copies pre-built node_modules directly instead of installing dependencies
-  - Modified build workflow to create production-only node_modules
-  - Removed all package.json copying and npm install steps from Dockerfile
-  - This significantly speeds up Docker builds and eliminates npm registry dependencies
-- Optimized Dockerfile to focus only on runtime dependencies:
-  - Simplified package.json file copying
-  - Kept npm install step for runtime dependencies
-  - This maintains the minimal approach while ensuring the application has access to required modules
-- Renamed build workflow to "CI Build" and added automatic triggers:
-  - Now automatically runs on code commits to the main branch
-  - Only triggers when changes are made to relevant files (apps, packages, config files)
-  - Still maintains manual trigger option with workflow_dispatch
-  - This improves automation while keeping manual control when needed
-- Improved artifact handling in deployment workflows:
-  - Added ability to specify workflow run ID containing artifacts
-  - Added automatic detection of latest successful build workflow run
-  - Added robust error handling for missing artifacts
-  - Added conditional steps based on artifact availability
-  - Added detailed logging for better troubleshooting
-  - This resolves the "Artifact not found" errors during deployment
-- Fixed npm installation error in Docker build:
-  - Changed from `npm ci` to `npm install` in Dockerfile
-  - Added package-lock.json to deployment artifacts
-  - This resolves the "npm ci command can only install with an existing package-lock.json" error
-- Updated all GitHub Actions to latest versions:
-  - Updated actions/checkout from v3 to v4
-  - Updated actions/setup-node from v3 to v4
-  - Updated actions/download-artifact to v4 consistently
-  - Updated superfly/flyctl-actions/setup-flyctl from master to 1.4
-  - Updated amondnet/vercel-action from v20 to v25
-  - This ensures compatibility with the latest GitHub Actions runner (2.322.0)
-- Changed build workflow to manual trigger only:
-  - Removed automatic trigger on push to main branch
-  - Added optional description input parameter
-  - This gives more control over when builds are created
-- Fixed GitHub Actions artifact download permissions:
-  - Added explicit `permissions` block with `actions: read` permission
-  - Switched from `dawidd6/action-download-artifact@v2` to official `actions/download-artifact@v3`
-  - Added `github-token` parameter to artifact download steps
-  - This resolves the "Resource not accessible by integration" error
-- Updated GitHub Actions artifact actions:
-  - Upgraded actions/upload-artifact from v3 to v4
-  - Upgraded actions/download-artifact from v3 to v4
-  - Fixed "Missing download info" error in GitHub Actions workflow
-- Separated build and deploy processes:
-  - Created a dedicated build workflow that runs on push to main and on-demand
-  - Build workflow creates deployment artifacts and uploads them to GitHub
-  - Deployment workflows download artifacts and deploy them to environments
-  - Added ability to specify which build to deploy via build ID
-  - This improves reliability and allows for promoting the same build across environments
-- Fixed GitHub Actions Fly.io deployment:
-  - Corrected the usage of superfly/flyctl-actions/setup-flyctl action
-  - Separated the setup and deployment steps
-  - Fixed the rollback procedure to use flyctl directly
-  - Removed invalid 'args' parameter that was causing warnings
-- Fixed GitHub Pages deployment permissions:
-  - Added explicit `permissions` section to the deployment dashboard workflow
-  - Granted `contents: write` and `pages: write` permissions to the GITHUB_TOKEN
-  - This resolves the 403 error when trying to push to the gh-pages branch
-- Further optimized CI/CD workflow:
-  - Streamlined code commit process to only run the `check` script (lint + type-check + format)
-  - Kept full build and test process for pull requests
-  - This improves CI performance for regular commits while maintaining thorough checks for PRs
-- Improved CI/CD workflow:
-  - Separated code quality checks from deployment workflows
-  - Made staging and production deployments manually triggered via workflow_dispatch
-  - Added confirmation step for deployments to prevent accidental deployments
-  - Created separate workflow files for staging and production deployments
-- Fixed GitHub Actions formatting check:
-  - Updated all Prettier commands to use `npx prettier` instead of direct `prettier` calls
-  - This resolves the "command not found" error in GitHub Actions
-- Fixed GitHub Actions build errors related to TypeScript type checking:
-  - Updated the build sequence to ensure shared packages are built before type checking
-  - Added a new `build:packages` script to build only the shared packages
-  - Modified the `type-check` task in turbo.json to depend on the `build` task
-  - Standardized Node.js version to 20.x across all GitHub workflows
-- Fixed pre-commit hook configuration to properly handle file paths:
-  - Updated lint-staged configuration to use eslint and prettier directly instead of through turbo
-  - This resolves issues with file paths being passed to turbo commands
-- Fixed Docker build errors in deployment:
-  - Removed unnecessary `COPY node_modules/` command from Dockerfile
-  - Added directory structure creation in deployment workflows
-  - Added conditional file movement to ensure correct paths for dist files
-  - This resolves the "not found" errors during Docker builds
-- Optimized Fly.io deployment with streamlined Dockerfile:
-  - Updated Dockerfile to use pre-built artifacts without rebuilding
-  - Removed node_modules from deployment artifacts to reduce size
-  - Configured Dockerfile to install only production dependencies
-  - This improves deployment speed and reduces resource usage on Fly.io
+### NestJS Dependency Version Alignment (2023-11-15)
+
+We've implemented a more robust solution for handling NestJS dependency version conflicts:
+
+1. **Source Package Alignment**: All NestJS package versions are now directly aligned in the source package.json files, ensuring consistency between the root package.json resolutions and the API package.json dependencies.
+
+2. **Simplified Build Process**: The build workflow no longer needs to dynamically extract and apply NestJS versions during the build process, as they're already aligned in the source files.
+
+3. **Removed Legacy Peer Deps Flag**: We've removed the `--legacy-peer-deps` flag from the Dockerfile's npm installation command, opting for a cleaner approach that properly resolves dependencies.
+
+This approach ensures that all NestJS packages are consistently versioned throughout the project, preventing "Cannot find module" errors and version conflicts during deployment.
+
+### Benefits of the New Approach:
+
+- **Maintainability**: Single source of truth for NestJS versions in the source package.json files
+- **Reliability**: Prevents version drift between different parts of the application
+- **Cleaner Builds**: No need for workarounds like `--legacy-peer-deps`
+- **Simplified CI/CD**: Build workflow no longer needs complex jq commands to align versions
+- **Future-Proofing**: Makes upgrading NestJS versions simpler in the future
+
+### Previous Issues Resolved:
+
+- "npm error ERESOLVE could not resolve" during Docker build
+- "Cannot find module '@nestjs/config'" errors in production
+- Inconsistent behavior between local development and production environments
 
 ## Deployment Process
 

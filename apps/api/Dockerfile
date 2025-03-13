@@ -10,6 +10,7 @@ COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
 
 # Install all dependencies including NestJS packages
+# Using clean npm ci without legacy-peer-deps flag
 RUN npm ci --only=production
 
 # Copy pre-built artifacts

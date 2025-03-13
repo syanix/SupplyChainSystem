@@ -70,17 +70,14 @@ jobs:
           cp packages/ui/package.json deploy-api/packages/ui/
 
           # Temporarily modify package.json to remove husky and fix Node.js version requirement
-          echo "Modifying package.json to remove husky and fix Node.js version..."
+          echo "Modifying package.json to remove husky..."
           cd deploy-api
-          jq 'del(.scripts.prepare) | if has("engines") then .engines.node = ">=20.0.0" else . + {"engines":{"node":">=20.0.0"}} end' package.json > package.json.tmp
+          jq 'del(.scripts.prepare)' package.json > package.json.tmp
           mv package.json.tmp package.json
-          jq 'if has("engines") then .engines.node = ">=20.0.0" else . + {"engines":{"node":">=20.0.0"}} end' apps/api/package.json > apps/api/package.json.tmp
-          mv apps/api/package.json.tmp apps/api/package.json
 
-          # Ensure NestJS dependencies are explicitly marked as production dependencies
-          echo "Ensuring NestJS dependencies are included..."
-          jq '.dependencies["@nestjs/config"] = "*" | .dependencies["@nestjs/common"] = "*" | .dependencies["@nestjs/core"] = "*"' apps/api/package.json > apps/api/package.json.tmp
-          mv apps/api/package.json.tmp apps/api/package.json
+          # No need to extract and update NestJS versions since they're already aligned in the source files
+          echo "NestJS dependencies are already aligned in source package.json files"
+
           cd ..
 
           # Copy Dockerfile and fly.toml files
