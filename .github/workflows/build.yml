@@ -181,7 +181,7 @@ jobs:
 
       # Upload API deployment artifact
       - name: Upload API deployment artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: api-deployment
           path: api-deployment.zip
@@ -189,7 +189,7 @@ jobs:
 
       # Upload Web deployment artifact
       - name: Upload Web deployment artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-deployment
           path: web-deployment.zip
@@ -202,7 +202,7 @@ jobs:
 
       # Upload build info
       - name: Upload build info
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-info
           path: build-info.json

@@ -61,7 +61,7 @@ jobs:
 
       # Download API deployment artifact
       - name: Download API deployment artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: api-deployment
           path: .
@@ -87,7 +87,7 @@ jobs:
 
       # Download Web deployment artifact
       - name: Download Web deployment artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: web-deployment
           path: .

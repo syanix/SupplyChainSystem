@@ -19,6 +19,10 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Updated GitHub Actions artifact actions:
+  - Upgraded actions/upload-artifact from v3 to v4
+  - Upgraded actions/download-artifact from v3 to v4
+  - Fixed "Missing download info" error in GitHub Actions workflow
 - Separated build and deploy processes:
   - Created a dedicated build workflow that runs on push to main and on-demand
   - Build workflow creates deployment artifacts and uploads them to GitHub
