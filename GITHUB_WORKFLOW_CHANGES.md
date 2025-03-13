@@ -44,9 +44,11 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Updated `deploy-web.yml` to include environment-specific API URLs
    - Added support for both staging and production environments
    - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
-   - Added domain aliases for consistent URLs across environments
+   - Simplified deployment by using Vercel CLI directly instead of GitHub Action
+   - Added explicit project and organization IDs for reliable targeting
    - Improved verification process to ensure successful deployments
    - Fixed artifact name to correctly reference `web-artifact` instead of `web-deployment`
+   - Eliminated the need for Git initialization by using CLI approach
 
 ## Build Workflow Details
 
