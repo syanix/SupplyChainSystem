@@ -619,4 +619,11 @@ We've made several improvements to the deployment process to ensure that all req
 
 7. **OpenSSL for Prisma**: We've added OpenSSL to the Dockerfile to ensure that Prisma can function correctly in the Alpine Linux environment.
 
+8. **Environment Variables for Vercel Deployment**: We've updated the GitHub workflow for Vercel deployment to include environment-specific API URLs:
+
+   - Production: `https://supply-chain-system-api.fly.dev`
+   - Staging: `https://staging-supply-chain-system-api.fly.dev`
+
+   This ensures that the frontend application can communicate with the correct backend API based on the deployment environment.
+
 These changes resolve issues with missing dependencies like `@prisma/client` and ensure that the application can start correctly in the Fly.io environment.

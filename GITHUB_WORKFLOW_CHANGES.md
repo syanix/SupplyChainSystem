@@ -34,10 +34,18 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Assumes artifacts are pre-built, focusing only on running the application
 
 5. **Improved Fly.io Deployment**:
+
    - Updated `deploy-api.yml` to work with the new artifact structure
    - Removed Dockerfile reference from fly.toml files
    - Dynamically generates fly.toml during deployment
    - Simplified the deployment process by using standard Fly.io features
+
+6. **Enhanced Vercel Deployment**:
+   - Updated `deploy-web.yml` to include environment-specific API URLs
+   - Added support for both staging and production environments
+   - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
+   - Added domain aliases for consistent URLs across environments
+   - Improved verification process to ensure successful deployments
 
 ## Build Workflow Details
 

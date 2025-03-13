@@ -120,6 +120,10 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./deploy-web
           vercel-args: "--prebuilt ${{ inputs.environment == 'production' && '--prod' || '' }}"
+          alias-domains: |
+            ${{ inputs.environment == 'production' && format('{0}', secrets.VERCEL_PRODUCTION_DOMAIN) || format('{0}', secrets.VERCEL_STAGING_DOMAIN) }}
+        env:
+          NEXT_PUBLIC_API_URL: ${{ inputs.environment == 'production' && 'https://supply-chain-system-api.fly.dev' || 'https://staging-supply-chain-system-api.fly.dev' }}
 
       - name: Verify Deployment
         run: |
