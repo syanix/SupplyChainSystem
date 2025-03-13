@@ -62,9 +62,13 @@ jobs:
           cp packages/shared/package.json api-artifact/packages/shared/
           cp packages/ui/package.json api-artifact/packages/ui/
 
-          # Install production dependencies
+          # Remove husky prepare script from package.json
           cd api-artifact
-          npm ci --production --no-optional
+          jq 'del(.scripts.prepare)' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+          # Install production dependencies
+          npm ci --omit=dev --no-optional
           cd ..
 
           # Copy packages dist folders

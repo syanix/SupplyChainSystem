@@ -599,4 +599,6 @@ We've made several improvements to the deployment process to ensure that all req
 
 4. **Directory Structure**: We've improved the directory creation process to ensure all necessary directories exist before copying files. This prevents errors like "Not a directory" when copying files to nested paths.
 
+5. **Husky Removal**: We now remove the husky prepare script from the package.json file before installing dependencies. This prevents errors when running npm ci in a non-git environment, as husky tries to install git hooks.
+
 These changes resolve issues with missing dependencies like `@nestjs/config` and ensure that the application can start correctly in the Fly.io environment.

@@ -17,7 +17,8 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
 
 3. **Improved Artifact Packaging**:
 
-   - API artifact now includes production-only dependencies installed with `npm ci --production`
+   - API artifact now includes production-only dependencies installed with `npm ci --omit=dev`
+   - Husky prepare script is removed to prevent git hook installation errors
    - Packages are now included with their dist folders and necessary files
    - Prisma schema and generated client are explicitly included
    - Proper directory structure is created before copying files
