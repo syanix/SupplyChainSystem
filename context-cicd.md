@@ -31,6 +31,8 @@ The build workflow is manually triggered via `workflow_dispatch`. It:
 Separate workflows for staging and production deployments:
 
 - Accept an optional build ID parameter
+- Accept an optional run ID parameter to specify which workflow run contains the artifacts
+- Automatically find the latest successful build if no run ID is specified
 - Download the specified build (or latest if not specified)
 - Deploy to the appropriate environment
 - Perform health checks after deployment
@@ -53,6 +55,13 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+- Improved artifact handling in deployment workflows:
+  - Added ability to specify workflow run ID containing artifacts
+  - Added automatic detection of latest successful build workflow run
+  - Added robust error handling for missing artifacts
+  - Added conditional steps based on artifact availability
+  - Added detailed logging for better troubleshooting
+  - This resolves the "Artifact not found" errors during deployment
 - Updated all GitHub Actions to latest versions:
   - Updated actions/checkout from v3 to v4
   - Updated actions/setup-node from v3 to v4

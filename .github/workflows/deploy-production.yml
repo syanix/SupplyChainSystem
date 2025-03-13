@@ -10,6 +10,9 @@ on:
       build_id:
         description: "Build ID to deploy (leave empty for latest successful build)"
         required: false
+      run_id:
+        description: "Workflow run ID containing the artifacts (leave empty to search automatically)"
+        required: false
 
 # Add permissions block to allow artifact download
 permissions:
@@ -38,14 +41,67 @@ jobs:
             .github
           sparse-checkout-cone-mode: false
 
+      # Find the latest successful build workflow run if run_id is not specified
+      - name: Find latest successful build
+        id: find_build
+        if: github.event.inputs.run_id == ''
+        run: |
+          echo "Searching for the latest successful build workflow run..."
+
+          # Get the latest successful workflow runs
+          WORKFLOW_RUNS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1")
+
+          # Extract the run ID from the response
+          RUN_ID=$(echo $WORKFLOW_RUNS | jq -r '.workflow_runs[0].id')
+
+          if [ "$RUN_ID" = "null" ] || [ -z "$RUN_ID" ]; then
+            echo "No successful build workflow runs found."
+            echo "run_id=" >> $GITHUB_OUTPUT
+            exit 0
+          else
+            echo "Found latest successful build workflow run: $RUN_ID"
+            echo "run_id=$RUN_ID" >> $GITHUB_OUTPUT
+          fi
+
+      # Set the run ID
+      - name: Set run ID
+        id: set_run_id
+        run: |
+          if [ -n "${{ github.event.inputs.run_id }}" ]; then
+            echo "RUN_ID=${{ github.event.inputs.run_id }}" >> $GITHUB_ENV
+            echo "Using specified run ID: ${{ github.event.inputs.run_id }}"
+          elif [ -n "${{ steps.find_build.outputs.run_id }}" ]; then
+            echo "RUN_ID=${{ steps.find_build.outputs.run_id }}" >> $GITHUB_ENV
+            echo "Using latest successful build run ID: ${{ steps.find_build.outputs.run_id }}"
+          else
+            echo "No run ID specified and no successful builds found. Please specify a run ID."
+            exit 1
+          fi
+
       # Download build info to get the latest build ID if not specified
       - name: Download build info
+        id: download_build_info
         uses: actions/download-artifact@v4
         with:
           name: build-info
           path: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.RUN_ID }}
+          if-no-artifact-found: warn
         if: github.event.inputs.build_id == ''
+        continue-on-error: true
+
+      # Check if build-info.json exists
+      - name: Check build info
+        id: check_build_info
+        run: |
+          if [ -f "build-info.json" ]; then
+            echo "build_info_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_info_exists=false" >> $GITHUB_OUTPUT
+          fi
 
       # Set the build ID
       - name: Set build ID
@@ -54,25 +110,43 @@ jobs:
           if [ -n "${{ github.event.inputs.build_id }}" ]; then
             echo "BUILD_ID=${{ github.event.inputs.build_id }}" >> $GITHUB_ENV
             echo "Using specified build ID: ${{ github.event.inputs.build_id }}"
-          elif [ -f "build-info.json" ]; then
+          elif [ "${{ steps.check_build_info.outputs.build_info_exists }}" = "true" ]; then
             BUILD_ID=$(jq -r '.build_id' build-info.json)
             echo "BUILD_ID=$BUILD_ID" >> $GITHUB_ENV
-            echo "Using latest build ID: $BUILD_ID"
+            echo "Using build ID from build-info.json: $BUILD_ID"
           else
-            echo "No build ID specified and no build info found. Please specify a build ID."
-            exit 1
+            echo "Using run ID as build ID: ${{ env.RUN_ID }}"
+            echo "BUILD_ID=${{ env.RUN_ID }}" >> $GITHUB_ENV
           fi
 
       # Download API deployment artifact
       - name: Download API deployment artifact
+        id: download_api
         uses: actions/download-artifact@v4
         with:
           name: api-deployment
           path: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.RUN_ID }}
+          if-no-artifact-found: warn
+        continue-on-error: true
+
+      # Check if API deployment artifact was downloaded
+      - name: Check API artifact
+        id: check_api
+        run: |
+          if [ -f "api-deployment.zip" ]; then
+            echo "api_artifact_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "api_artifact_exists=false" >> $GITHUB_OUTPUT
+            echo "API deployment artifact not found. Please ensure a build has been completed successfully."
+            exit 1
+          fi
 
       # Extract API deployment package
       - name: Extract API deployment package
+        if: steps.check_api.outputs.api_artifact_exists == 'true'
         run: |
           mkdir -p deploy-api
           unzip -o api-deployment.zip -d deploy-api
@@ -84,6 +158,7 @@ jobs:
 
       # Deploy to Fly.io
       - name: Deploy API to Fly.io (Production)
+        if: steps.check_api.outputs.api_artifact_exists == 'true'
         run: |
           cd deploy-api
           flyctl deploy --config fly.production.toml --remote-only
@@ -92,14 +167,32 @@ jobs:
 
       # Download Web deployment artifact
       - name: Download Web deployment artifact
+        id: download_web
         uses: actions/download-artifact@v4
         with:
           name: web-deployment
           path: .
           github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          run-id: ${{ env.RUN_ID }}
+          if-no-artifact-found: warn
+        continue-on-error: true
+
+      # Check if Web deployment artifact was downloaded
+      - name: Check Web artifact
+        id: check_web
+        run: |
+          if [ -f "web-deployment.zip" ]; then
+            echo "web_artifact_exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "web_artifact_exists=false" >> $GITHUB_OUTPUT
+            echo "Web deployment artifact not found. Please ensure a build has been completed successfully."
+            exit 1
+          fi
 
       # Extract Web deployment package
       - name: Extract Web deployment package
+        if: steps.check_web.outputs.web_artifact_exists == 'true'
         run: |
           mkdir -p deploy-web
           unzip -o web-deployment.zip -d deploy-web
@@ -107,6 +200,7 @@ jobs:
 
       # Deploy to Vercel
       - name: Deploy Web to Vercel (Production)
+        if: steps.check_web.outputs.web_artifact_exists == 'true'
         uses: amondnet/vercel-action@v25
         with:
           vercel-token: ${{ secrets.VERCEL_TOKEN }}
@@ -117,6 +211,7 @@ jobs:
 
       - name: Check deployment health
         id: health_check
+        if: steps.check_api.outputs.api_artifact_exists == 'true'
         run: |
           # Wait for deployment to stabilize
           sleep 30
