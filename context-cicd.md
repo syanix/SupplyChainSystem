@@ -56,6 +56,21 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Workflow Permissions Update (2023-11-19)
+
+We've updated the permissions configuration in our deployment workflows to address the "Resource not accessible by integration" error:
+
+1. **Explicit Permissions**: Added explicit permissions blocks to all workflow files:
+
+   - `deploy.yml`: Added `actions: write` permission to allow triggering other workflows
+   - `deploy-api.yml` and `deploy-web.yml`: Added `actions: read` permission to access artifacts
+
+2. **Personal Access Token Fallback**: Added support for using a Personal Access Token (PAT) as a fallback:
+   - The workflows now check for a `PAT_TOKEN` secret before falling back to the default `GITHUB_TOKEN`
+   - This provides flexibility when the default token doesn't have sufficient permissions
+
+These changes ensure that our workflows have the necessary permissions to access artifacts and trigger other workflows, resolving the "Resource not accessible by integration" error.
+
 ### Multi-Stage Deployment Workflows (2023-11-18)
 
 We've implemented a more flexible multi-stage deployment architecture:

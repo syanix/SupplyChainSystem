@@ -34,6 +34,11 @@ on:
         default: true
         type: boolean
 
+# Add permissions block to allow workflow dispatch
+permissions:
+  contents: read
+  actions: write
+
 jobs:
   validate:
     runs-on: ubuntu-latest
@@ -52,7 +57,7 @@ jobs:
       - name: Trigger API Deployment
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
@@ -76,7 +81,7 @@ jobs:
       - name: Trigger Web Deployment
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: context.repo.owner,
