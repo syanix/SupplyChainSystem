@@ -3,8 +3,6 @@ primary_region = "syd"
 
 [build]
   dockerfile = "Dockerfile"
-  context = "../.."
-  builder = "dockerfile"
 
 [env]
   NODE_ENV = "production"

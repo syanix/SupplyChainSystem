@@ -67,13 +67,35 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Create deployment artifact directory
+      - name: Prepare deployment artifacts
+        run: |
+          mkdir -p deploy/apps/api/dist
+          mkdir -p deploy/packages/database/dist
+          mkdir -p deploy/packages/shared/dist
+          mkdir -p deploy/packages/ui/dist
+
+          # Copy necessary files
+          cp -r apps/api/dist/* deploy/apps/api/dist/
+          cp -r packages/database/dist/* deploy/packages/database/dist/
+          cp -r packages/shared/dist/* deploy/packages/shared/dist/
+          cp -r packages/ui/dist/* deploy/packages/ui/dist/
+          cp apps/api/Dockerfile deploy/
+          cp apps/api/package.json deploy/apps/api/
+          cp packages/database/package.json deploy/packages/database/
+          cp packages/shared/package.json deploy/packages/shared/
+          cp packages/ui/package.json deploy/packages/ui/
+          cp package.json deploy/
+
       # Install Fly CLI
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
 
       # Deploy to Fly.io
       - name: Deploy API to Fly.io (Production)
-        run: flyctl deploy --config ./apps/api/fly.toml --remote-only
+        run: |
+          cd deploy
+          flyctl deploy --config ../apps/api/fly.toml --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -85,7 +107,7 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./apps/web
           root-directory: .
-          vercel-args: "--prod"
+          vercel-args: "--prod --prebuilt"
 
       - name: Check deployment health
         id: health_check

@@ -19,6 +19,16 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ### Recent Changes
 
+- Implemented pre-built artifacts deployment strategy:
+  - Modified Dockerfile to use pre-built artifacts instead of building during deployment
+  - Updated GitHub Actions workflows to build once and deploy the artifacts
+  - Added `--prebuilt` flag to Vercel deployments
+  - This improves deployment speed and consistency across environments
+- Created Fly.io applications:
+  - Installed Fly.io CLI locally
+  - Created `supply-chain-system-api` for production
+  - Created `supply-chain-system-api-staging` for staging
+  - This resolves the "Could not find App" error during deployment
 - Fixed GitHub Pages deployment permissions:
   - Added explicit `permissions` section to the deployment dashboard workflow
   - Granted `contents: write` and `pages: write` permissions to the GITHUB_TOKEN
@@ -131,6 +141,10 @@ The Supply Chain System is a multi-tenant SaaS platform designed for small busin
 
 ## Known Issues
 
+- Fly.io deployment issues:
+  - Missing NestJS dependencies in the Docker build process
+  - Need to update the Dockerfile to install all required NestJS packages
+  - Current error: "Cannot find module '@nestjs/typeorm' or its corresponding type declarations"
 - Need to ensure proper tenant isolation in all database queries
 - Need to optimize database performance for large datasets
 - Need to implement comprehensive error handling throughout the application
