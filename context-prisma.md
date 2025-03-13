@@ -582,3 +582,19 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Manages secrets securely using the Fly.io CLI
 
 These changes ensure that the build process is more reliable and easier to maintain, while also making deployment more straightforward. The API artifact now includes all necessary runtime dependencies, eliminating the need for complex dependency installation during deployment.
+
+## Deployment Fixes
+
+We've made several improvements to the deployment process to ensure that all required dependencies are properly included:
+
+1. **Production Dependencies**: Instead of copying the development node_modules directory, we now install production-only dependencies in the deployment artifact. This ensures that:
+
+   - Only necessary dependencies are included
+   - Development dependencies are excluded
+   - The node_modules structure is optimized for the deployment environment
+
+2. **Prisma Client**: We now explicitly copy the Prisma schema and generated client to ensure that Prisma can function correctly in the deployment environment.
+
+3. **Correct File Paths**: We've updated the file paths in the Dockerfile and fly.toml to use the correct path for the main.js file, ensuring that the application starts properly.
+
+These changes resolve issues with missing dependencies like `@nestjs/config` and ensure that the application can start correctly in the Fly.io environment.

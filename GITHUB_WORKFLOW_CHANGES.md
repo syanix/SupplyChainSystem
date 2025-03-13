@@ -17,9 +17,11 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
 
 3. **Improved Artifact Packaging**:
 
-   - API artifact now includes `node_modules` for runtime dependencies
-   - Packages are now included in their entirety rather than just the dist folders
+   - API artifact now includes production-only dependencies installed with `npm ci --production`
+   - Packages are now included with their dist folders and necessary files
+   - Prisma schema and generated client are explicitly included
    - Simplified the directory structure for easier deployment
+   - Correct file paths are used in all configuration files
 
 4. **Simplified Dockerfile**:
 

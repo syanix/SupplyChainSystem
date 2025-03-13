@@ -54,14 +54,22 @@ jobs:
           # Copy package.json files
           cp package.json package-lock.json api-artifact/
           cp apps/api/package.json api-artifact/apps/api/
+          cp packages/database/package.json api-artifact/packages/database/
+          cp packages/shared/package.json api-artifact/packages/shared/
+          cp packages/ui/package.json api-artifact/packages/ui/
 
-          # Copy node_modules (required at runtime)
-          cp -r node_modules api-artifact/
+          # Install production dependencies
+          cd api-artifact
+          npm ci --production --no-optional
+          cd ..
 
           # Copy packages dist folders
-          cp -r packages/database api-artifact/packages/
-          cp -r packages/shared api-artifact/packages/
-          cp -r packages/ui api-artifact/packages/
+          cp -r packages/database/dist api-artifact/packages/database/
+          cp -r packages/shared/dist api-artifact/packages/shared/
+          cp -r packages/ui/dist api-artifact/packages/ui/
+
+          # Copy Prisma schema and generated client
+          cp -r packages/database/prisma api-artifact/packages/database/
 
           # Create a simple Dockerfile
           cat > api-artifact/Dockerfile << EOL
@@ -79,7 +87,7 @@ jobs:
           ENV NODE_ENV=production
 
           # Run the app
-          CMD ["node", "apps/api/dist/main"]
+          CMD ["node", "apps/api/dist/main.js"]
           EOL
 
           # Create a README

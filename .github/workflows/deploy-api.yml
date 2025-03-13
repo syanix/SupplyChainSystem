@@ -154,7 +154,7 @@ jobs:
               protocol = "http"
 
           [processes]
-            app = "node apps/api/dist/main"
+            app = "node apps/api/dist/main.js"
           EOL
 
           echo "Created fly.toml for ${APP_NAME}"
