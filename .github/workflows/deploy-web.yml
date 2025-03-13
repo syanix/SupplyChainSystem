@@ -99,7 +99,7 @@ jobs:
       - name: Download Web deployment artifact
         uses: actions/download-artifact@v4
         with:
-          name: web-deployment
+          name: web-artifact
           repository: ${{ github.repository }}
           run-id: ${{ steps.set_run_id.outputs.run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -108,7 +108,7 @@ jobs:
       - name: Extract Web deployment artifact
         run: |
           mkdir -p deploy-web
-          tar -xzf web-deployment.tar.gz -C deploy-web
+          tar -xzf web-artifact.tar.gz -C deploy-web
           ls -la deploy-web
 
       - name: Deploy to Vercel

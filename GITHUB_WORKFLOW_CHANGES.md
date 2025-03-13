@@ -46,6 +46,7 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
    - Added domain aliases for consistent URLs across environments
    - Improved verification process to ensure successful deployments
+   - Fixed artifact name to correctly reference `web-artifact` instead of `web-deployment`
 
 ## Build Workflow Details
 
