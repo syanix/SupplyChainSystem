@@ -635,28 +635,29 @@ For Vercel deployment, we're using a Git-based approach:
 1. The workflow checks out the code directly from the repository
 2. It verifies the monorepo structure (checks for `apps/web` directory and key files)
 3. It removes the Husky prepare script to prevent git-related errors during deployment
-4. It builds the Next.js application in the `apps/web` directory and verifies the build output
-5. It sets appropriate project names for each environment:
+4. It sets appropriate project names for each environment:
    - Production: `supply-chain-system`
    - Staging: `staging-supply-chain-system`
-6. Vercel handles the deployment process
+5. Vercel handles the entire build and deployment process
 
 We've added monorepo-specific configuration to handle the Next.js app in the `apps/web` directory:
 
 1. **Root next.config.js**: A simple configuration file that helps Vercel identify the project structure
 2. **vercel.json**: Configuration file with:
-   - Custom build command that navigates to the `apps/web` directory
+   - Custom build command that installs all dependencies at the root level
    - Custom output directory pointing to `apps/web/.next`
    - Rewrites to properly handle the monorepo structure
    - Framework specification (Next.js)
 
 This approach simplifies the deployment process by leveraging Vercel's built-in Git integration and build system. The workflow sets the appropriate environment variables and project names based on the deployment target, ensuring that the frontend application can communicate with the correct backend API and deploy to the correct Vercel project.
 
-The workflow includes comprehensive checks to ensure that:
+The workflow includes checks to ensure that:
 
 - The monorepo structure is correct
-- The build process completes successfully
-- The necessary build artifacts (including routes-manifest.json) are created
 - The deployment is verified via health checks
 
-By letting Vercel handle the build process with our custom configuration, we ensure that the application is built consistently and according to Vercel's best practices, while properly handling our monorepo structure.
+By letting Vercel handle the entire build process, we ensure that:
+
+- All workspace dependencies are properly resolved
+- The application is built consistently according to Vercel's best practices
+- The monorepo structure is properly handled

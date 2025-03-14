@@ -49,10 +49,9 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Added `vercel.json` configuration file for consistent project settings
    - Added monorepo-specific configuration to handle the Next.js app in the `apps/web` directory
    - Added Husky prepare script removal to prevent git-related errors
-   - Added comprehensive checks for monorepo structure and build output
    - Simplified deployment by using Vercel CLI directly
    - Improved verification process to ensure successful deployments
-   - Leverages Vercel's build system to handle the build process
+   - Leverages Vercel's build system to handle the entire build process, including workspace dependencies
 
 ## Build Workflow Details
 
@@ -122,11 +121,9 @@ The `deploy-web.yml` workflow handles deployment to Vercel:
 1. Checks out the code directly from the repository
 2. Verifies the monorepo structure (checks for `apps/web` directory and key files)
 3. Removes the Husky prepare script to prevent git-related errors
-4. Installs dependencies and builds the Next.js application in the `apps/web` directory
-5. Verifies the build output, including the presence of the `routes-manifest.json` file
-6. Sets appropriate project name based on the deployment environment
-7. Deploys to Vercel using the CLI with environment-specific settings
-8. Verifies the deployment by checking the health endpoint
+4. Sets appropriate project name based on the deployment environment
+5. Deploys to Vercel using the CLI with environment-specific settings
+6. Verifies the deployment by checking the health endpoint
 
 The workflow uses different project names for different environments:
 
@@ -137,9 +134,11 @@ This ensures that each environment has its own dedicated Vercel project.
 
 We've also added monorepo-specific configuration in `vercel.json`:
 
-- Custom build command that navigates to the `apps/web` directory
+- Custom build command that installs all dependencies at the root level
 - Custom output directory pointing to `apps/web/.next`
 - Rewrites to properly handle the monorepo structure
+
+By letting Vercel handle the entire build process, we ensure that all workspace dependencies are properly resolved and the application is built correctly.
 
 ## Benefits of These Changes
 

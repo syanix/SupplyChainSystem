@@ -39,12 +39,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-
       - name: Check monorepo structure
         run: |
           echo "Checking monorepo structure..."
@@ -91,34 +85,6 @@ jobs:
             fi
           else
             echo "package.json not found"
-          fi
-
-      - name: Install dependencies
-        run: npm ci || npm install
-
-      - name: Build application
-        run: |
-          echo "Building Next.js application..."
-          cd apps/web
-          npm ci || npm install
-          npm run build
-
-          # Check if .next directory was created
-          if [ -d ".next" ]; then
-            echo "✅ Next.js build successful, .next directory created"
-            echo "Contents of .next directory:"
-            ls -la .next
-            
-            # Check for routes-manifest.json
-            if [ -f ".next/routes-manifest.json" ]; then
-              echo "✅ Found routes-manifest.json"
-            else
-              echo "❌ routes-manifest.json not found"
-              exit 1
-            fi
-          else
-            echo "❌ Next.js build failed, .next directory not created"
-            exit 1
           fi
 
       - name: Install Vercel CLI
