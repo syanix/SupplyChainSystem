@@ -238,3 +238,34 @@ This approach takes full advantage of Vercel's Git integration and build system.
 5. **Better Separation of Concerns**: Build and deployment are now separate processes
 6. **Improved Reliability**: Standardized deployment process with verification and rollback
 7. **Leverages Platform Capabilities**: Uses Vercel's built-in Git integration and build system
+
+## Revised Vercel Deployment Approach
+
+We've completely revised our approach to deploying to Vercel to ensure maximum reliability:
+
+1. **Build Packages in GitHub Actions**:
+
+   - All workspace packages are now built in the GitHub Actions workflow
+   - This ensures we have full control over the build environment
+   - Packages are built using the standard `npm run build:packages` command
+   - This leverages Turbo for efficient and reliable builds
+
+2. **Pre-copy Workspace Packages**:
+
+   - After building, packages are copied to the web app's `node_modules` directory
+   - This happens before deployment to Vercel
+   - The web app is prepared as a standalone application with all dependencies included
+
+3. **Simplified Vercel Build**:
+
+   - Vercel now only needs to build the web app itself
+   - The build command is simplified to `cd apps/web && npm install && npm run build`
+   - No need for complex scripts to build workspace packages in the Vercel environment
+
+4. **Benefits**:
+   - More reliable builds by using a controlled environment (GitHub Actions)
+   - Simpler Vercel configuration
+   - Faster Vercel builds since packages are pre-built
+   - Clearer separation of concerns between building packages and deploying the web app
+
+This approach ensures that the workspace packages are properly built and available to the web app during the Vercel build process, without relying on Vercel's environment to build the packages.

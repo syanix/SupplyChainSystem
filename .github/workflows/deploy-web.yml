@@ -39,6 +39,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
       - name: Check monorepo structure
         run: |
           echo "Checking monorepo structure..."
@@ -69,15 +75,40 @@ jobs:
             exit 1
           fi
 
-          # Check if vercel.json files exist
-          if [ -f "vercel.json" ] && [ -f "apps/web/vercel.json" ]; then
-            echo "✅ Found vercel.json files"
-          else
-            echo "❌ vercel.json files not found"
-            exit 1
+          echo "Monorepo structure looks good!"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build workspace packages
+        run: npm run build:packages
+
+      - name: Prepare web app for deployment
+        run: |
+          echo "Preparing web app for standalone deployment..."
+
+          # Create node_modules directory in web app if it doesn't exist
+          mkdir -p apps/web/node_modules/@supply-chain-system
+
+          # Copy shared package
+          if [ -d "packages/shared" ]; then
+            echo "Copying shared package..."
+            cp -r packages/shared apps/web/node_modules/@supply-chain-system/
           fi
 
-          echo "Monorepo structure looks good!"
+          # Copy UI package
+          if [ -d "packages/ui" ]; then
+            echo "Copying UI package..."
+            cp -r packages/ui apps/web/node_modules/@supply-chain-system/
+          fi
+
+          # Copy database package if needed
+          if [ -d "packages/database" ]; then
+            echo "Copying database package..."
+            cp -r packages/database apps/web/node_modules/@supply-chain-system/
+          fi
+
+          echo "Web app prepared for standalone deployment!"
 
       - name: Install Vercel CLI
         run: npm install -g vercel
