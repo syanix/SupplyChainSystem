@@ -17,13 +17,53 @@ if (!fs.existsSync(webAppDir) || !fs.existsSync(packagesDir)) {
   process.exit(1);
 }
 
-// Install global dependencies needed for building
-console.log("Installing global dependencies...");
-try {
-  execSync("npm install -g typescript tsup", { stdio: "inherit" });
-} catch (error) {
-  console.error("Error installing global dependencies:", error);
-  process.exit(1);
+// Create simple build files for packages
+console.log("Creating simple build files for packages...");
+
+// Create simple tsup config for shared package
+if (fs.existsSync(path.join(packagesDir, "shared"))) {
+  const sharedTsupConfig = `
+const { defineConfig } = require('tsup');
+
+module.exports = defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  treeshake: true,
+  external: [],
+});
+`;
+  fs.writeFileSync(
+    path.join(packagesDir, "shared", "tsup.config.js"),
+    sharedTsupConfig
+  );
+}
+
+// Create simple tsup config for UI package
+if (fs.existsSync(path.join(packagesDir, "ui"))) {
+  const uiTsupConfig = `
+const { defineConfig } = require('tsup');
+
+module.exports = defineConfig({
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+  external: ['react', 'antd'],
+  outExtension: ({ format }) => ({
+    js: \`.\${format}.js\`,
+  }),
+});
+`;
+  fs.writeFileSync(
+    path.join(packagesDir, "ui", "tsup.config.js"),
+    uiTsupConfig
+  );
 }
 
 // Install dependencies for shared packages first
@@ -32,7 +72,7 @@ try {
   // Install dependencies for shared package
   if (fs.existsSync(path.join(packagesDir, "shared"))) {
     console.log("Installing dependencies for shared package...");
-    execSync("cd packages/shared && npm install typescript tsup --save-dev", {
+    execSync("cd packages/shared && npm install typescript tsup --no-save", {
       stdio: "inherit",
     });
   }
@@ -40,7 +80,7 @@ try {
   // Install dependencies for UI package
   if (fs.existsSync(path.join(packagesDir, "ui"))) {
     console.log("Installing dependencies for UI package...");
-    execSync("cd packages/ui && npm install typescript tsup --save-dev", {
+    execSync("cd packages/ui && npm install typescript tsup --no-save", {
       stdio: "inherit",
     });
   }
@@ -48,7 +88,7 @@ try {
   // Install dependencies for database package
   if (fs.existsSync(path.join(packagesDir, "database"))) {
     console.log("Installing dependencies for database package...");
-    execSync("cd packages/database && npm install typescript --save-dev", {
+    execSync("cd packages/database && npm install typescript --no-save", {
       stdio: "inherit",
     });
   }
@@ -63,19 +103,23 @@ try {
   // Build shared package
   if (fs.existsSync(path.join(packagesDir, "shared"))) {
     console.log("Building shared package...");
-    execSync("cd packages/shared && npx tsup", { stdio: "inherit" });
+    execSync("cd packages/shared && npx tsup --config tsup.config.js", {
+      stdio: "inherit",
+    });
   }
 
   // Build UI package
   if (fs.existsSync(path.join(packagesDir, "ui"))) {
     console.log("Building UI package...");
-    execSync("cd packages/ui && npx tsup", { stdio: "inherit" });
+    execSync("cd packages/ui && npx tsup --config tsup.config.js", {
+      stdio: "inherit",
+    });
   }
 
   // Build database package if it has a build script
   if (fs.existsSync(path.join(packagesDir, "database", "package.json"))) {
     const dbPackageJson = require(
-      path.join(packagesDir, "database", "package.json"),
+      path.join(packagesDir, "database", "package.json")
     );
     if (dbPackageJson.scripts && dbPackageJson.scripts.build) {
       console.log("Building database package...");
@@ -106,7 +150,7 @@ if (fs.existsSync(sharedDir)) {
   // Copy the package.json
   fs.copyFileSync(
     path.join(sharedDir, "package.json"),
-    path.join(sharedTargetDir, "package.json"),
+    path.join(sharedTargetDir, "package.json")
   );
 
   // Copy the dist directory
@@ -132,7 +176,7 @@ if (fs.existsSync(uiDir)) {
   // Copy the package.json
   fs.copyFileSync(
     path.join(uiDir, "package.json"),
-    path.join(uiTargetDir, "package.json"),
+    path.join(uiTargetDir, "package.json")
   );
 
   // Copy the dist directory
