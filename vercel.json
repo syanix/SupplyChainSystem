@@ -1,9 +1,10 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm install && npm run build",
+  "buildCommand": "cd apps/web && npm install && npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "npm install",
+  "installCommand": "cd apps/web && npm install",
   "outputDirectory": "apps/web/.next",
-  "rewrites": [{ "source": "/(.*)", "destination": "/apps/web/$1" }]
+  "rewrites": [{ "source": "/(.*)", "destination": "/apps/web/$1" }],
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web/"
 }

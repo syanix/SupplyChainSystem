@@ -71,6 +71,48 @@ jobs:
 
           echo "Monorepo structure looks good!"
 
+      - name: Prepare web app for standalone deployment
+        run: |
+          echo "Preparing web app for standalone deployment..."
+
+          # Copy shared packages to web app's node_modules
+          mkdir -p apps/web/node_modules/@supply-chain-system
+
+          # Copy shared package
+          if [ -d "packages/shared" ]; then
+            echo "Copying shared package..."
+            cp -r packages/shared apps/web/node_modules/@supply-chain-system/
+            # Build the shared package
+            cd packages/shared
+            npm install
+            npm run build
+            cd ../..
+          fi
+
+          # Copy UI package
+          if [ -d "packages/ui" ]; then
+            echo "Copying UI package..."
+            cp -r packages/ui apps/web/node_modules/@supply-chain-system/
+            # Build the UI package
+            cd packages/ui
+            npm install
+            npm run build
+            cd ../..
+          fi
+
+          # Copy database package if needed
+          if [ -d "packages/database" ]; then
+            echo "Copying database package..."
+            cp -r packages/database apps/web/node_modules/@supply-chain-system/
+            # Build the database package
+            cd packages/database
+            npm install
+            npm run build
+            cd ../..
+          fi
+
+          echo "Web app prepared for standalone deployment!"
+
       - name: Remove Husky prepare script
         run: |
           if [ -f "package.json" ]; then
@@ -87,12 +129,26 @@ jobs:
             echo "package.json not found"
           fi
 
+          # Also check and remove from web app's package.json
+          if [ -f "apps/web/package.json" ]; then
+            if grep -q "\"prepare\".*husky" apps/web/package.json; then
+              echo "Removing husky prepare script from apps/web/package.json"
+              cd apps/web
+              jq 'del(.scripts.prepare)' package.json > package.json.tmp
+              mv package.json.tmp package.json
+              cd ../..
+            fi
+          fi
+
       - name: Install Vercel CLI
         run: npm install -g vercel
 
       - name: Deploy to Vercel
         id: deploy
         run: |
+          # Change to web app directory
+          cd apps/web
+
           # Set environment-specific variables
           VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --yes"
 
