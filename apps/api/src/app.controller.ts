@@ -28,7 +28,16 @@ export class AppController {
       properties: {
         status: { type: "string" },
         timestamp: { type: "string", format: "date-time" },
-        userCount: { type: "number" },
+        counts: {
+          type: "object",
+          properties: {
+            users: { type: "number" },
+            tenants: { type: "number" },
+            suppliers: { type: "number" },
+            products: { type: "number" },
+            orders: { type: "number" },
+          },
+        },
         databaseInfo: {
           type: "object",
           properties: {
@@ -42,8 +51,15 @@ export class AppController {
   @ApiResponse({ status: 500, description: "Database connection failed" })
   async testDatabaseConnection() {
     try {
-      // Test the connection by counting users
-      const userCount = await this.prismaService.client.user.count();
+      // Test the connection by counting various entities
+      const [userCount, tenantCount, supplierCount, productCount, orderCount] =
+        await Promise.all([
+          this.prismaService.client.user.count(),
+          this.prismaService.client.tenant.count(),
+          this.prismaService.client.supplier.count(),
+          this.prismaService.client.product.count(),
+          this.prismaService.client.order.count(),
+        ]);
 
       // Get database connection info (masking sensitive parts)
       const dbUrl = process.env.DATABASE_URL || "";
@@ -52,7 +68,13 @@ export class AppController {
       return {
         status: "connected",
         timestamp: new Date().toISOString(),
-        userCount,
+        counts: {
+          users: userCount,
+          tenants: tenantCount,
+          suppliers: supplierCount,
+          products: productCount,
+          orders: orderCount,
+        },
         databaseInfo: {
           provider: "postgresql", // Hardcoded since $databaseProvider is not available
           url: maskedDbUrl,
