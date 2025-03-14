@@ -45,9 +45,8 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Added support for both staging and production environments
    - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
    - Simplified deployment by using Vercel CLI directly instead of GitHub Action
-   - Added `.vercel/project.json` for proper project linking
+   - Added `.vercel/project.json` with custom `rootDirectory` setting
    - Implemented multi-strategy directory detection for Next.js app
-   - Added directory structure adaptation for Vercel compatibility
    - Added comprehensive debugging output for troubleshooting
    - Improved verification process to ensure successful deployments
    - Fixed artifact name to correctly reference `web-artifact` instead of `web-deployment`

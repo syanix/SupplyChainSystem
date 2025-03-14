@@ -630,6 +630,6 @@ We've made several improvements to the deployment process to ensure that all req
    2. Checking standard directory paths
    3. Scanning for Next.js dependencies in package.json files
 
-   Furthermore, we've added directory structure adaptation to ensure compatibility with Vercel's expected path structure. The workflow detects the actual location of the Next.js application and then creates the directory structure that Vercel expects, ensuring that the deployment works regardless of the artifact structure or Vercel project configuration.
+   Furthermore, we've configured the Vercel project settings directly in the `.vercel/project.json` file by setting the `rootDirectory` to the current directory. This approach avoids the need to copy files to a specific path and ensures that Vercel deploys from the correct directory regardless of the artifact structure or Vercel project configuration.
 
 These changes resolve issues with missing dependencies like `@prisma/client` and ensure that the application can start correctly in the Fly.io environment.

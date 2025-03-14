@@ -162,33 +162,24 @@ jobs:
           echo "Contents of app directory:"
           ls -la "$APP_DIR"
 
-          # Create the expected directory structure for Vercel
-          # The error message indicates Vercel is looking for: ~/work/SupplyChainSystem/SupplyChainSystem/deploy-web/apps/web
-          mkdir -p deploy-web/apps/web
-
-          # Copy all files from the detected app directory to the expected path
-          if [ "$APP_DIR" != "deploy-web/apps/web" ]; then
-            echo "Copying files from $APP_DIR to deploy-web/apps/web"
-            cp -r "$APP_DIR"/* deploy-web/apps/web/
-            cp -r "$APP_DIR"/.* deploy-web/apps/web/ 2>/dev/null || true
-            
-            # Change to the expected directory
-            cd deploy-web/apps/web
-          else
-            # Already in the correct directory
-            cd "$APP_DIR"
-          fi
-
-          echo "Current directory: $(pwd)"
-          echo "Contents of current directory:"
-          ls -la
+          # Instead of copying, let's update the Vercel project settings
+          cd "$APP_DIR"
 
           # Set environment-specific variables
           VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --yes"
 
           # Create .vercel directory and project.json for project linking
           mkdir -p .vercel
-          echo "{\"projectId\": \"${{ secrets.VERCEL_PROJECT_ID }}\", \"orgId\": \"${{ secrets.VERCEL_ORG_ID }}\"}" > .vercel/project.json
+
+          # Create a project.json that includes the correct path
+          echo '{"projectId": "${{ secrets.VERCEL_PROJECT_ID }}", "orgId": "${{ secrets.VERCEL_ORG_ID }}", "settings": {"framework": "nextjs", "rootDirectory": "."}}' > .vercel/project.json
+
+          echo "Created .vercel/project.json with rootDirectory setting"
+          cat .vercel/project.json
+
+          echo "Current directory: $(pwd)"
+          echo "Contents of current directory:"
+          ls -la
 
           if [ "${{ inputs.environment }}" == "production" ]; then
             VERCEL_ARGS="$VERCEL_ARGS --prod"
