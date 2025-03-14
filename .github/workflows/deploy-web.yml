@@ -109,7 +109,15 @@ jobs:
         run: |
           mkdir -p deploy-web
           tar -xzf web-artifact.tar.gz -C deploy-web
+          echo "Current working directory: $(pwd)"
+          echo "Contents of deploy-web directory:"
           ls -la deploy-web
+          echo "Full directory structure:"
+          find deploy-web -type d | sort
+          echo "Files with package.json:"
+          find deploy-web -name "package.json" | sort
+          echo "Next.js related files:"
+          find deploy-web -name "next.config.js" | sort
 
       - name: Install Vercel CLI
         run: npm install -g vercel
@@ -117,10 +125,47 @@ jobs:
       - name: Deploy to Vercel
         id: deploy
         run: |
-          cd deploy-web
+          # Find the actual Next.js app directory
+          NEXT_CONFIG_FILES=$(find deploy-web -name "next.config.js" | sort)
+
+          if [ -n "$NEXT_CONFIG_FILES" ]; then
+            # Use the first next.config.js file found
+            APP_DIR=$(dirname $(echo "$NEXT_CONFIG_FILES" | head -n 1))
+            echo "Found Next.js app directory via next.config.js: $APP_DIR"
+          elif [ -d "deploy-web/apps/web" ]; then
+            APP_DIR="deploy-web/apps/web"
+            echo "Found Next.js app directory at standard path: $APP_DIR"
+          elif [ -d "deploy-web/apps/web-app" ]; then
+            APP_DIR="deploy-web/apps/web-app"
+            echo "Found Next.js app directory at alternate path: $APP_DIR"
+          elif [ -d "deploy-web/web" ]; then
+            APP_DIR="deploy-web/web"
+            echo "Found Next.js app directory at simple path: $APP_DIR"
+          else
+            # Try to find any directory with a package.json that looks like a Next.js app
+            NEXT_PACKAGE_FILES=$(find deploy-web -name "package.json" -exec grep -l "next" {} \; | sort)
+            
+            if [ -n "$NEXT_PACKAGE_FILES" ]; then
+              APP_DIR=$(dirname $(echo "$NEXT_PACKAGE_FILES" | head -n 1))
+              echo "Found Next.js app directory via package.json: $APP_DIR"
+            else
+              echo "ERROR: Could not find Next.js app directory"
+              echo "Contents of deploy-web directory:"
+              ls -la deploy-web
+              echo "All package.json files:"
+              find deploy-web -name "package.json" -exec cat {} \; | grep -A 5 -B 5 "dependencies"
+              exit 1
+            fi
+          fi
+
+          echo "Using Next.js app directory: $APP_DIR"
+          echo "Contents of app directory:"
+          ls -la "$APP_DIR"
+
+          cd "$APP_DIR"
 
           # Set environment-specific variables
-          VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --cwd . --yes"
+          VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --yes"
 
           # Create .vercel directory and project.json for project linking
           mkdir -p .vercel
