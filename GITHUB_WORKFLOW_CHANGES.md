@@ -85,6 +85,7 @@ We've enhanced the Vercel build process to ensure reliable builds in the Vercel 
 1. **Updated Preparation Script**:
 
    - Modified `scripts/prepare-vercel-deploy.js` to install dependencies for each workspace package individually
+   - Added explicit installation of TypeScript and tsup to ensure build tools are available
    - Changed the build process to use `npx tsup` directly instead of relying on Turbo
    - Added better error handling and logging for each step of the process
    - Ensured each package is properly built before being copied to the web app
@@ -100,6 +101,7 @@ We've enhanced the Vercel build process to ensure reliable builds in the Vercel 
    - Better isolation between package builds
    - Clearer error messages when builds fail
    - Reduced dependency on Turbo for the deployment process
+   - Explicit dependency management for build tools
 
 These changes ensure that the workspace packages are properly built and available to the web app during the Vercel build process, even in environments where Turbo might not work as expected.
 

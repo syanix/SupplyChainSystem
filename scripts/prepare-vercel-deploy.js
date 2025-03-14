@@ -17,25 +17,40 @@ if (!fs.existsSync(webAppDir) || !fs.existsSync(packagesDir)) {
   process.exit(1);
 }
 
+// Install global dependencies needed for building
+console.log("Installing global dependencies...");
+try {
+  execSync("npm install -g typescript tsup", { stdio: "inherit" });
+} catch (error) {
+  console.error("Error installing global dependencies:", error);
+  process.exit(1);
+}
+
 // Install dependencies for shared packages first
 console.log("Installing dependencies for workspace packages...");
 try {
   // Install dependencies for shared package
   if (fs.existsSync(path.join(packagesDir, "shared"))) {
     console.log("Installing dependencies for shared package...");
-    execSync("cd packages/shared && npm install", { stdio: "inherit" });
+    execSync("cd packages/shared && npm install typescript tsup --save-dev", {
+      stdio: "inherit",
+    });
   }
 
   // Install dependencies for UI package
   if (fs.existsSync(path.join(packagesDir, "ui"))) {
     console.log("Installing dependencies for UI package...");
-    execSync("cd packages/ui && npm install", { stdio: "inherit" });
+    execSync("cd packages/ui && npm install typescript tsup --save-dev", {
+      stdio: "inherit",
+    });
   }
 
   // Install dependencies for database package
   if (fs.existsSync(path.join(packagesDir, "database"))) {
     console.log("Installing dependencies for database package...");
-    execSync("cd packages/database && npm install", { stdio: "inherit" });
+    execSync("cd packages/database && npm install typescript --save-dev", {
+      stdio: "inherit",
+    });
   }
 } catch (error) {
   console.error("Error installing dependencies for workspace packages:", error);
