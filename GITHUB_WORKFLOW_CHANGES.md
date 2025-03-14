@@ -40,18 +40,14 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Dynamically generates fly.toml during deployment
    - Simplified the deployment process by using standard Fly.io features
 
-6. **Enhanced Vercel Deployment**:
-   - Updated `deploy-web.yml` to include environment-specific API URLs
+6. **Simplified Vercel Deployment**:
+   - Updated `deploy-web.yml` to use Vercel's standard Git integration
+   - Removed artifact download and extraction steps
    - Added support for both staging and production environments
    - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
-   - Simplified deployment by using Vercel CLI directly instead of GitHub Action
-   - Added `.vercel/project.json` with custom `rootDirectory` setting
-   - Implemented multi-strategy directory detection for Next.js app
-   - Added comprehensive debugging output for troubleshooting
+   - Simplified deployment by using Vercel CLI directly
    - Improved verification process to ensure successful deployments
-   - Fixed artifact name to correctly reference `web-artifact` instead of `web-deployment`
-   - Eliminated the need for Git initialization by using CLI approach
-   - Leverages Vercel's build system instead of using prebuilt artifacts
+   - Leverages Vercel's build system to handle the build process
 
 ## Build Workflow Details
 
@@ -82,9 +78,9 @@ The API artifact contains:
 
 The Web artifact contains:
 
-- Pre-built Next.js application (`.next` directory)
-- Public assets
-- Configuration files
+- Prebuilt Next.js application (`.next` directory)
+- Configuration files (`next.config.js`, `package.json`, `tsconfig.json`)
+- Public assets (`public` directory)
 - A README with deployment instructions
 
 ## Deployment Instructions
@@ -116,12 +112,12 @@ The `deploy-api.yml` workflow handles deployment to Fly.io:
 
 ### Web Deployment
 
-1. Download the Web artifact
-2. Extract the contents
-3. Deploy to Vercel using the `--prebuilt` flag:
-   ```bash
-   vercel --prod --prebuilt
-   ```
+The `deploy-web.yml` workflow handles deployment to Vercel:
+
+1. Checks out the code directly from the repository
+2. Installs the Vercel CLI
+3. Deploys to Vercel using the CLI with environment-specific settings
+4. Verifies the deployment by checking the health endpoint
 
 ## Benefits of These Changes
 
@@ -131,3 +127,4 @@ The `deploy-api.yml` workflow handles deployment to Fly.io:
 4. **Easier Deployment**: Simplified deployment process
 5. **Better Separation of Concerns**: Build and deployment are now separate processes
 6. **Improved Reliability**: Standardized deployment process with verification and rollback
+7. **Leverages Platform Capabilities**: Uses Vercel's built-in Git integration and build system

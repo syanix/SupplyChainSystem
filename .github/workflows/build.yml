@@ -126,34 +126,6 @@ jobs:
           # Create a compressed tarball
           tar -czf api-artifact.tar.gz -C api-artifact .
 
-      # Package Web project
-      - name: Package Web project
-        run: |
-          mkdir -p web-artifact
-
-          # Copy Next.js build output
-          cp -r apps/web/.next web-artifact/
-          cp -r apps/web/public web-artifact/
-          cp apps/web/package.json web-artifact/
-          cp apps/web/next.config.js web-artifact/
-
-          # Create a README
-          cat > web-artifact/README.md << EOL
-          # Web Deployment Package
-
-          This package contains pre-built artifacts for the Supply Chain System Web frontend.
-
-          ## Deployment Instructions
-
-          Deploy to Vercel using the \`--prebuilt\` flag:
-
-          \`\`\`bash
-          vercel --prod --prebuilt
-          \`\`\`
-          EOL
-
-          # Create a compressed tarball
-          tar -czf web-artifact.tar.gz -C web-artifact .
 
       # Upload API artifact
       - name: Upload API artifact
@@ -163,13 +135,6 @@ jobs:
           path: api-artifact.tar.gz
           retention-days: 7
 
-      # Upload Web artifact
-      - name: Upload Web artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: web-artifact
-          path: web-artifact.tar.gz
-          retention-days: 7
 
       # Create a build info file with metadata
       - name: Create build info

@@ -11,14 +11,6 @@ on:
         options:
           - staging
           - production
-      run_id:
-        description: "GitHub Actions run ID containing the artifacts (optional)"
-        required: false
-        type: string
-      build_id:
-        description: "Build ID to deploy (optional)"
-        required: false
-        type: string
       confirm:
         description: 'Type "yes" to confirm deployment'
         required: true
@@ -44,80 +36,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - name: Find latest successful build workflow run
-        if: ${{ inputs.run_id == '' }}
-        id: find_build
-        run: |
-          # Find the latest successful build workflow run
-          LATEST_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1" | \
-            jq -r '.workflow_runs[0].id')
-
-          if [ "$LATEST_RUN_ID" == "null" ]; then
-            echo "No successful build workflow run found."
-            exit 1
-          fi
-
-          echo "Found latest successful build workflow run: $LATEST_RUN_ID"
-          echo "run_id=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
-
-      - name: Set run ID
-        id: set_run_id
-        run: |
-          if [ "${{ inputs.run_id }}" != "" ]; then
-            echo "Using provided run ID: ${{ inputs.run_id }}"
-            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
-          else
-            echo "Using latest successful build run ID: ${{ steps.find_build.outputs.run_id }}"
-            echo "run_id=${{ steps.find_build.outputs.run_id }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Download build info
-        uses: actions/download-artifact@v4
-        with:
-          name: build-info
-          repository: ${{ github.repository }}
-          run-id: ${{ steps.set_run_id.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ./
-
-      - name: Set build ID
-        id: set_build_id
-        run: |
-          if [ "${{ inputs.build_id }}" != "" ]; then
-            echo "Using provided build ID: ${{ inputs.build_id }}"
-            echo "build_id=${{ inputs.build_id }}" >> $GITHUB_OUTPUT
-          elif [ -f "build-info.json" ]; then
-            BUILD_ID=$(jq -r '.build_id' build-info.json)
-            echo "Using build ID from build-info.json: $BUILD_ID"
-            echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-          else
-            echo "Using run ID as build ID: ${{ steps.set_run_id.outputs.run_id }}"
-            echo "build_id=${{ steps.set_run_id.outputs.run_id }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Download Web deployment artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: web-artifact
-          repository: ${{ github.repository }}
-          run-id: ${{ steps.set_run_id.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ./
-
-      - name: Extract Web deployment artifact
-        run: |
-          mkdir -p deploy-web
-          tar -xzf web-artifact.tar.gz -C deploy-web
-          echo "Current working directory: $(pwd)"
-          echo "Contents of deploy-web directory:"
-          ls -la deploy-web
-          echo "Full directory structure:"
-          find deploy-web -type d | sort
-          echo "Files with package.json:"
-          find deploy-web -name "package.json" | sort
-          echo "Next.js related files:"
-          find deploy-web -name "next.config.js" | sort
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Install Vercel CLI
         run: npm install -g vercel
@@ -125,67 +45,16 @@ jobs:
       - name: Deploy to Vercel
         id: deploy
         run: |
-          # Find the actual Next.js app directory
-          NEXT_CONFIG_FILES=$(find deploy-web -name "next.config.js" | sort)
-
-          if [ -n "$NEXT_CONFIG_FILES" ]; then
-            # Use the first next.config.js file found
-            APP_DIR=$(dirname $(echo "$NEXT_CONFIG_FILES" | head -n 1))
-            echo "Found Next.js app directory via next.config.js: $APP_DIR"
-          elif [ -d "deploy-web/apps/web" ]; then
-            APP_DIR="deploy-web/apps/web"
-            echo "Found Next.js app directory at standard path: $APP_DIR"
-          elif [ -d "deploy-web/apps/web-app" ]; then
-            APP_DIR="deploy-web/apps/web-app"
-            echo "Found Next.js app directory at alternate path: $APP_DIR"
-          elif [ -d "deploy-web/web" ]; then
-            APP_DIR="deploy-web/web"
-            echo "Found Next.js app directory at simple path: $APP_DIR"
-          else
-            # Try to find any directory with a package.json that looks like a Next.js app
-            NEXT_PACKAGE_FILES=$(find deploy-web -name "package.json" -exec grep -l "next" {} \; | sort)
-            
-            if [ -n "$NEXT_PACKAGE_FILES" ]; then
-              APP_DIR=$(dirname $(echo "$NEXT_PACKAGE_FILES" | head -n 1))
-              echo "Found Next.js app directory via package.json: $APP_DIR"
-            else
-              echo "ERROR: Could not find Next.js app directory"
-              echo "Contents of deploy-web directory:"
-              ls -la deploy-web
-              echo "All package.json files:"
-              find deploy-web -name "package.json" -exec cat {} \; | grep -A 5 -B 5 "dependencies"
-              exit 1
-            fi
-          fi
-
-          echo "Using Next.js app directory: $APP_DIR"
-          echo "Contents of app directory:"
-          ls -la "$APP_DIR"
-
-          # Instead of copying, let's update the Vercel project settings
-          cd "$APP_DIR"
-
           # Set environment-specific variables
           VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --yes"
 
-          # Create .vercel directory and project.json for project linking
-          mkdir -p .vercel
-
-          # Create a project.json that includes the correct path
-          echo '{"projectId": "${{ secrets.VERCEL_PROJECT_ID }}", "orgId": "${{ secrets.VERCEL_ORG_ID }}", "settings": {"framework": "nextjs", "rootDirectory": "."}}' > .vercel/project.json
-
-          echo "Created .vercel/project.json with rootDirectory setting"
-          cat .vercel/project.json
-
-          echo "Current directory: $(pwd)"
-          echo "Contents of current directory:"
-          ls -la
-
           if [ "${{ inputs.environment }}" == "production" ]; then
             VERCEL_ARGS="$VERCEL_ARGS --prod"
-            DEPLOYMENT_URL=$(vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://supply-chain-system-api.fly.dev | grep -o 'https://.*')
+            echo "Running Vercel deployment with command: vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://supply-chain-system-api.fly.dev"
+            DEPLOYMENT_URL=$(vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://supply-chain-system-api.fly.dev | tee /dev/stderr | grep -o 'https://.*')
           else
-            DEPLOYMENT_URL=$(vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://staging-supply-chain-system-api.fly.dev | grep -o 'https://.*')
+            echo "Running Vercel deployment with command: vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://staging-supply-chain-system-api.fly.dev"
+            DEPLOYMENT_URL=$(vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://staging-supply-chain-system-api.fly.dev | tee /dev/stderr | grep -o 'https://.*')
           fi
 
           echo "deployment-url=$DEPLOYMENT_URL" >> $GITHUB_OUTPUT
