@@ -259,13 +259,15 @@ We've completely revised our approach to deploying to Vercel to ensure maximum r
 3. **Simplified Vercel Build**:
 
    - Vercel now only needs to build the web app itself
-   - The build command is simplified to `cd apps/web && npm install && npm run build`
+   - The build command is updated to install all dev dependencies: `npm install --include=dev && npm run build`
+   - This ensures that all development tools and dependencies (including CSS processors) are available during the Vercel build
    - No need for complex scripts to build workspace packages in the Vercel environment
 
 4. **Benefits**:
-   - More reliable builds by using a controlled environment (GitHub Actions)
-   - Simpler Vercel configuration
+   - More reliable builds by using a controlled environment (GitHub Actions) for workspace packages
+   - Complete installation of dev dependencies in Vercel to prevent any "module not found" errors
+   - Simpler Vercel configuration with a more comprehensive dependency installation
    - Faster Vercel builds since packages are pre-built
    - Clearer separation of concerns between building packages and deploying the web app
 
-This approach ensures that the workspace packages are properly built and available to the web app during the Vercel build process, without relying on Vercel's environment to build the packages.
+This approach ensures that the workspace packages are properly built and available to the web app during the Vercel build process, without relying on Vercel's environment to build the packages. Additionally, all development dependencies are installed during the Vercel build to ensure proper processing of CSS, TypeScript, and any other build-time requirements.
