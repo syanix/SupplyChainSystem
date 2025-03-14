@@ -1,9 +1,12 @@
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { PrismaService } from "./prisma/prisma.service";
 
 @ApiTags("health")
 @Controller()
 export class AppController {
+  constructor(private readonly prismaService: PrismaService) {}
+
   @Get("health")
   @ApiOperation({ summary: "Health check endpoint" })
   @ApiResponse({ status: 200, description: "API is healthy" })
@@ -13,5 +16,59 @@ export class AppController {
       timestamp: new Date().toISOString(),
       environment: process.env.NODE_ENV,
     };
+  }
+
+  @Get("db-connection")
+  @ApiOperation({ summary: "Database connection test endpoint" })
+  @ApiResponse({
+    status: 200,
+    description: "Database connection is working",
+    schema: {
+      type: "object",
+      properties: {
+        status: { type: "string" },
+        timestamp: { type: "string", format: "date-time" },
+        userCount: { type: "number" },
+        databaseInfo: {
+          type: "object",
+          properties: {
+            provider: { type: "string" },
+            url: { type: "string" },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 500, description: "Database connection failed" })
+  async testDatabaseConnection() {
+    try {
+      // Test the connection by counting users
+      const userCount = await this.prismaService.client.user.count();
+
+      // Get database connection info (masking sensitive parts)
+      const dbUrl = process.env.DATABASE_URL || "";
+      const maskedDbUrl = dbUrl.replace(/:([^:@]+)@/, ":****@");
+
+      return {
+        status: "connected",
+        timestamp: new Date().toISOString(),
+        userCount,
+        databaseInfo: {
+          provider: "postgresql", // Hardcoded since $databaseProvider is not available
+          url: maskedDbUrl,
+        },
+      };
+    } catch (error) {
+      // Return error details but don't expose sensitive information
+      const err = error as Error; // Type assertion for better type safety
+      return {
+        status: "error",
+        timestamp: new Date().toISOString(),
+        error: err.message || "Unknown error",
+        // Only include code and meta if they exist
+        ...((err as any).code && { code: (err as any).code }),
+        ...((err as any).meta && { meta: (err as any).meta }),
+      };
+    }
   }
 }
