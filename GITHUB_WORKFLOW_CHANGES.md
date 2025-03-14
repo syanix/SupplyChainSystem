@@ -45,7 +45,7 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Added support for both staging and production environments
    - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
    - Simplified deployment by using Vercel CLI directly instead of GitHub Action
-   - Added dynamic `vercel.json` generation for project linking
+   - Added `.vercel/project.json` for proper project linking
    - Improved verification process to ensure successful deployments
    - Fixed artifact name to correctly reference `web-artifact` instead of `web-deployment`
    - Eliminated the need for Git initialization by using CLI approach
