@@ -1,9 +1,9 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));if(p.scripts && p.scripts.prepare){delete p.scripts.prepare;fs.writeFileSync('package.json',JSON.stringify(p,null,2));}\" && cd apps/web && node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));if(p.scripts && p.scripts.prepare){delete p.scripts.prepare;fs.writeFileSync('package.json',JSON.stringify(p,null,2));}\" && npm install && npm run build",
+  "buildCommand": "cd apps/web && npm install && npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));if(p.scripts && p.scripts.prepare){delete p.scripts.prepare;fs.writeFileSync('package.json',JSON.stringify(p,null,2));}\" && cd apps/web && node -e \"const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json'));if(p.scripts && p.scripts.prepare){delete p.scripts.prepare;fs.writeFileSync('package.json',JSON.stringify(p,null,2));}\" && npm install",
+  "installCommand": "cd apps/web && npm install",
   "outputDirectory": "apps/web/.next",
   "rewrites": [{ "source": "/(.*)", "destination": "/apps/web/$1" }],
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web/"

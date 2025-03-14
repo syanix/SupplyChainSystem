@@ -646,8 +646,8 @@ We've added monorepo-specific configuration to handle the Next.js app in the `ap
 
 1. **Root vercel.json**: Configuration file with:
 
-   - Custom build command that focuses only on the web app and removes Husky prepare scripts using Node.js
-   - Custom install command that focuses only on the web app and removes Husky prepare scripts using Node.js
+   - Custom build command that focuses only on the web app
+   - Custom install command that focuses only on the web app
    - Ignore command to only trigger builds when the web app changes
    - Custom output directory pointing to the web app's `.next` directory
    - Rewrites to properly handle the monorepo structure
@@ -655,13 +655,8 @@ We've added monorepo-specific configuration to handle the Next.js app in the `ap
 2. **Web app vercel.json**: A specific configuration file in the web app directory that:
 
    - Specifies the framework (Next.js)
-   - Provides build and install commands that remove Husky prepare scripts using Node.js
+   - Provides build and install commands specific to the web app
    - Sets the output directory to `.next`
-
-3. **.npmrc files**: Added in both the root directory and the web app directory to:
-   - Disable scripts during npm install
-   - Prevent Husky from trying to install git hooks
-   - Ensure smooth installation of dependencies without git-related errors
 
 This approach simplifies the deployment process by leveraging Vercel's built-in Git integration and build system, while ensuring that only the web app is built and deployed. The workflow sets the appropriate environment variables and project names based on the deployment target, ensuring that the frontend application can communicate with the correct backend API and deploy to the correct Vercel project.
 
@@ -669,12 +664,10 @@ The workflow includes steps to ensure that:
 
 - The monorepo structure is correct
 - The web app has access to all required workspace dependencies
-- Husky doesn't cause issues during the build process
 - The deployment is verified via health checks
 
-By focusing only on the web app during deployment and preventing Husky-related errors, we ensure that:
+By focusing only on the web app during deployment, we ensure that:
 
 - Vercel doesn't attempt to build the API or other parts of the monorepo
 - The web app has access to all required dependencies
-- The build process completes without git-related errors
 - The application is built consistently according to Vercel's best practices

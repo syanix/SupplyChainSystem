@@ -48,11 +48,8 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Added proper project naming for Vercel deployments (`supply-chain-system` for production, `staging-supply-chain-system` for staging)
    - Added `vercel.json` configuration file for consistent project settings
    - Added monorepo-specific configuration to handle the Next.js app in the `apps/web` directory
-   - Added `.npmrc` files to disable scripts during npm install
-   - Modified Vercel build commands to use Node.js to remove Husky prepare scripts before building
-   - Simplified deployment workflow by removing redundant steps:
-     - Removed manual package copying (now handled by Vercel's build process)
-     - Removed manual Husky script removal (now handled by .npmrc and vercel.json)
+   - Removed Husky completely from the project to simplify deployment
+   - Simplified deployment workflow by removing redundant steps
    - Improved verification process to ensure successful deployments
    - Leverages Vercel's build system to handle the web app build process
 
@@ -136,15 +133,18 @@ This ensures that each environment has its own dedicated Vercel project.
 
 We've also added monorepo-specific configuration in `vercel.json`:
 
-- Custom build command that focuses only on the web app and removes Husky prepare scripts using Node.js
-- Custom install command that focuses only on the web app and removes Husky prepare scripts using Node.js
+- Custom build command that focuses only on the web app
+- Custom install command that focuses only on the web app
 - Ignore command to only trigger builds when the web app changes
 - Custom output directory pointing to the web app's `.next` directory
 - Rewrites to properly handle the monorepo structure
 
-Additionally, we've added `.npmrc` files in both the root directory and the web app directory to disable scripts during npm install, which prevents Husky from trying to install git hooks.
+By focusing only on the web app during deployment and removing Husky completely, we ensure that:
 
-By focusing only on the web app during deployment and ensuring Husky doesn't cause issues, we ensure that Vercel doesn't attempt to build the API or other parts of the monorepo that aren't relevant to the web deployment.
+- Vercel doesn't attempt to build the API or other parts of the monorepo
+- The web app has access to all required dependencies
+- The build process completes without git-related errors
+- The application is built consistently according to Vercel's best practices
 
 ## Benefits of These Changes
 
