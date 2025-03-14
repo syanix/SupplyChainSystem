@@ -25,13 +25,13 @@ try {
     console.log("Installing dependencies for shared package...");
     execSync("cd packages/shared && npm install", { stdio: "inherit" });
   }
-  
+
   // Install dependencies for UI package
   if (fs.existsSync(path.join(packagesDir, "ui"))) {
     console.log("Installing dependencies for UI package...");
     execSync("cd packages/ui && npm install", { stdio: "inherit" });
   }
-  
+
   // Install dependencies for database package
   if (fs.existsSync(path.join(packagesDir, "database"))) {
     console.log("Installing dependencies for database package...");
@@ -50,16 +50,18 @@ try {
     console.log("Building shared package...");
     execSync("cd packages/shared && npx tsup", { stdio: "inherit" });
   }
-  
+
   // Build UI package
   if (fs.existsSync(path.join(packagesDir, "ui"))) {
     console.log("Building UI package...");
     execSync("cd packages/ui && npx tsup", { stdio: "inherit" });
   }
-  
+
   // Build database package if it has a build script
   if (fs.existsSync(path.join(packagesDir, "database", "package.json"))) {
-    const dbPackageJson = require(path.join(packagesDir, "database", "package.json"));
+    const dbPackageJson = require(
+      path.join(packagesDir, "database", "package.json"),
+    );
     if (dbPackageJson.scripts && dbPackageJson.scripts.build) {
       console.log("Building database package...");
       execSync("cd packages/database && npm run build", { stdio: "inherit" });
@@ -85,13 +87,13 @@ if (fs.existsSync(sharedDir)) {
     fs.rmSync(sharedTargetDir, { recursive: true, force: true });
   }
   fs.mkdirSync(sharedTargetDir, { recursive: true });
-  
+
   // Copy the package.json
   fs.copyFileSync(
     path.join(sharedDir, "package.json"),
-    path.join(sharedTargetDir, "package.json")
+    path.join(sharedTargetDir, "package.json"),
   );
-  
+
   // Copy the dist directory
   const distDir = path.join(sharedDir, "dist");
   const distTargetDir = path.join(sharedTargetDir, "dist");
@@ -111,13 +113,13 @@ if (fs.existsSync(uiDir)) {
     fs.rmSync(uiTargetDir, { recursive: true, force: true });
   }
   fs.mkdirSync(uiTargetDir, { recursive: true });
-  
+
   // Copy the package.json
   fs.copyFileSync(
     path.join(uiDir, "package.json"),
-    path.join(uiTargetDir, "package.json")
+    path.join(uiTargetDir, "package.json"),
   );
-  
+
   // Copy the dist directory
   const distDir = path.join(uiDir, "dist");
   const distTargetDir = path.join(uiTargetDir, "dist");
