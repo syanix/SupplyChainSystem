@@ -49,6 +49,7 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Improved verification process to ensure successful deployments
    - Fixed artifact name to correctly reference `web-artifact` instead of `web-deployment`
    - Eliminated the need for Git initialization by using CLI approach
+   - Leverages Vercel's build system instead of using prebuilt artifacts
 
 ## Build Workflow Details
 
