@@ -49,7 +49,7 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Added `vercel.json` configuration file for consistent project settings
    - Added monorepo-specific configuration to handle the Next.js app in the `apps/web` directory
    - Added `.npmrc` files to disable scripts during npm install
-   - Modified Vercel build commands to remove Husky prepare scripts before building
+   - Modified Vercel build commands to use Node.js to remove Husky prepare scripts before building
    - Simplified deployment workflow by removing redundant steps:
      - Removed manual package copying (now handled by Vercel's build process)
      - Removed manual Husky script removal (now handled by .npmrc and vercel.json)
@@ -136,8 +136,8 @@ This ensures that each environment has its own dedicated Vercel project.
 
 We've also added monorepo-specific configuration in `vercel.json`:
 
-- Custom build command that focuses only on the web app and removes Husky prepare scripts
-- Custom install command that focuses only on the web app and removes Husky prepare scripts
+- Custom build command that focuses only on the web app and removes Husky prepare scripts using Node.js
+- Custom install command that focuses only on the web app and removes Husky prepare scripts using Node.js
 - Ignore command to only trigger builds when the web app changes
 - Custom output directory pointing to the web app's `.next` directory
 - Rewrites to properly handle the monorepo structure

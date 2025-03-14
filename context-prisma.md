@@ -646,8 +646,8 @@ We've added monorepo-specific configuration to handle the Next.js app in the `ap
 
 1. **Root vercel.json**: Configuration file with:
 
-   - Custom build command that focuses only on the web app and removes Husky prepare scripts
-   - Custom install command that focuses only on the web app and removes Husky prepare scripts
+   - Custom build command that focuses only on the web app and removes Husky prepare scripts using Node.js
+   - Custom install command that focuses only on the web app and removes Husky prepare scripts using Node.js
    - Ignore command to only trigger builds when the web app changes
    - Custom output directory pointing to the web app's `.next` directory
    - Rewrites to properly handle the monorepo structure
@@ -655,7 +655,7 @@ We've added monorepo-specific configuration to handle the Next.js app in the `ap
 2. **Web app vercel.json**: A specific configuration file in the web app directory that:
 
    - Specifies the framework (Next.js)
-   - Provides build and install commands that remove Husky prepare scripts
+   - Provides build and install commands that remove Husky prepare scripts using Node.js
    - Sets the output directory to `.next`
 
 3. **.npmrc files**: Added in both the root directory and the web app directory to:
