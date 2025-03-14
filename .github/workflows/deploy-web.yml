@@ -121,7 +121,10 @@ jobs:
 
           # Set environment-specific variables
           VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --cwd . --prebuilt --yes"
-          VERCEL_ARGS="$VERCEL_ARGS --scope ${{ secrets.VERCEL_ORG_ID }} --project ${{ secrets.VERCEL_PROJECT_ID }}"
+          VERCEL_ARGS="$VERCEL_ARGS --scope ${{ secrets.VERCEL_ORG_ID }}"
+
+          # Create a simple vercel.json file for project linking
+          echo "{\"projectId\": \"${{ secrets.VERCEL_PROJECT_ID }}\", \"orgId\": \"${{ secrets.VERCEL_ORG_ID }}\"}" > vercel.json
 
           if [ "${{ inputs.environment }}" == "production" ]; then
             VERCEL_ARGS="$VERCEL_ARGS --prod"
