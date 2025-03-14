@@ -78,6 +78,31 @@ We've updated the Vercel deployment configuration to properly handle workspace p
 
 This approach allows us to maintain our monorepo structure while deploying the web app to Vercel, which doesn't natively support workspace packages. The preparation script builds all required packages and makes them available to the web app during the build process, eliminating the "Module not found" errors.
 
+## Vercel Build Process Improvements
+
+We've enhanced the Vercel build process to ensure reliable builds in the Vercel environment:
+
+1. **Updated Preparation Script**:
+
+   - Modified `scripts/prepare-vercel-deploy.js` to install dependencies for each workspace package individually
+   - Changed the build process to use `npx tsup` directly instead of relying on Turbo
+   - Added better error handling and logging for each step of the process
+   - Ensured each package is properly built before being copied to the web app
+
+2. **Simplified Vercel Configuration**:
+
+   - Updated `vercel.json` to streamline the build command
+   - Removed dependency on Turbo for building workspace packages
+   - Ensured proper sequencing of build steps (prepare packages first, then build web app)
+
+3. **Benefits**:
+   - More reliable builds in the Vercel environment
+   - Better isolation between package builds
+   - Clearer error messages when builds fail
+   - Reduced dependency on Turbo for the deployment process
+
+These changes ensure that the workspace packages are properly built and available to the web app during the Vercel build process, even in environments where Turbo might not work as expected.
+
 ## Build Workflow Details
 
 The new build workflow:
