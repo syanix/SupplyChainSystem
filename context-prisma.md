@@ -634,9 +634,18 @@ For Vercel deployment, we're using a Git-based approach:
 
 1. The workflow checks out the code directly from the repository
 2. It uses the Vercel CLI to deploy the application
-3. Vercel handles the build process automatically
+3. It sets appropriate project names for each environment:
+   - Production: `supply-chain-system`
+   - Staging: `staging-supply-chain-system`
+4. Vercel handles the build process automatically
 
-This approach simplifies the deployment process by leveraging Vercel's built-in Git integration and build system. The workflow sets the appropriate environment variables based on the deployment target, ensuring that the frontend application can communicate with the correct backend API.
+We've also added a `vercel.json` configuration file to ensure consistent project settings across deployments. This file specifies:
+
+- The framework (Next.js)
+- Build, development, and install commands
+- Output directory
+
+This approach simplifies the deployment process by leveraging Vercel's built-in Git integration and build system. The workflow sets the appropriate environment variables and project names based on the deployment target, ensuring that the frontend application can communicate with the correct backend API and deploy to the correct Vercel project.
 
 The simplified workflow eliminates the need for:
 

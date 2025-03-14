@@ -45,6 +45,8 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Removed artifact download and extraction steps
    - Added support for both staging and production environments
    - Configured environment variables (`NEXT_PUBLIC_API_URL`) based on deployment target
+   - Added proper project naming for Vercel deployments (`supply-chain-system` for production, `staging-supply-chain-system` for staging)
+   - Added `vercel.json` configuration file for consistent project settings
    - Simplified deployment by using Vercel CLI directly
    - Improved verification process to ensure successful deployments
    - Leverages Vercel's build system to handle the build process
@@ -116,8 +118,16 @@ The `deploy-web.yml` workflow handles deployment to Vercel:
 
 1. Checks out the code directly from the repository
 2. Installs the Vercel CLI
-3. Deploys to Vercel using the CLI with environment-specific settings
-4. Verifies the deployment by checking the health endpoint
+3. Sets appropriate project name based on the deployment environment
+4. Deploys to Vercel using the CLI with environment-specific settings
+5. Verifies the deployment by checking the health endpoint
+
+The workflow uses different project names for different environments:
+
+- Production: `supply-chain-system`
+- Staging: `staging-supply-chain-system`
+
+This ensures that each environment has its own dedicated Vercel project.
 
 ## Benefits of These Changes
 

@@ -48,11 +48,15 @@ jobs:
           # Set environment-specific variables
           VERCEL_ARGS="--token ${{ secrets.VERCEL_TOKEN }} --yes"
 
+          # Set project name based on environment
           if [ "${{ inputs.environment }}" == "production" ]; then
-            VERCEL_ARGS="$VERCEL_ARGS --prod"
+            PROJECT_NAME="supply-chain-system"
+            VERCEL_ARGS="$VERCEL_ARGS --prod --name $PROJECT_NAME"
             echo "Running Vercel deployment with command: vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://supply-chain-system-api.fly.dev"
             DEPLOYMENT_URL=$(vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://supply-chain-system-api.fly.dev | tee /dev/stderr | grep -o 'https://.*')
           else
+            PROJECT_NAME="staging-supply-chain-system"
+            VERCEL_ARGS="$VERCEL_ARGS --name $PROJECT_NAME"
             echo "Running Vercel deployment with command: vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://staging-supply-chain-system-api.fly.dev"
             DEPLOYMENT_URL=$(vercel $VERCEL_ARGS --env NEXT_PUBLIC_API_URL=https://staging-supply-chain-system-api.fly.dev | tee /dev/stderr | grep -o 'https://.*')
           fi
