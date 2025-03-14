@@ -53,6 +53,31 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Improved verification process to ensure successful deployments
    - Leverages Vercel's build system to handle the web app build process
 
+## Vercel Deployment Workspace Package Fix
+
+We've updated the Vercel deployment configuration to properly handle workspace packages in our monorepo structure. This fixes the "Module not found" errors for `@supply-chain-system/ui` and `@supply-chain-system/shared` during the Vercel build process.
+
+### Key Changes:
+
+1. **Created a Deployment Preparation Script**:
+
+   - Added `scripts/prepare-vercel-deploy.js` to handle the workspace package preparation
+   - This script builds all workspace packages and copies them to the web app's `node_modules` directory
+   - Ensures that all required packages are available during the Vercel build process
+
+2. **Updated Vercel Configuration**:
+
+   - Modified `vercel.json` to use the new preparation script in the build command
+   - Simplified the build process by delegating workspace package handling to the script
+   - Ensured proper exports configuration in workspace package.json files
+
+3. **Enhanced Package Configurations**:
+   - Updated `packages/shared/package.json` and `packages/ui/package.json` to include proper exports configuration
+   - Added explicit types exports to improve TypeScript integration
+   - Ensured that all necessary files are included in the package distribution
+
+This approach allows us to maintain our monorepo structure while deploying the web app to Vercel, which doesn't natively support workspace packages. The preparation script builds all required packages and makes them available to the web app during the build process, eliminating the "Module not found" errors.
+
 ## Build Workflow Details
 
 The new build workflow:
@@ -145,6 +170,35 @@ By focusing only on the web app during deployment and removing Husky completely,
 - The web app has access to all required dependencies
 - The build process completes without git-related errors
 - The application is built consistently according to Vercel's best practices
+
+## Simplified Vercel Deployment Workflow
+
+We've further simplified the `deploy-web.yml` workflow to leverage Vercel's build system more efficiently:
+
+1. **Removed Redundant Build Steps**:
+
+   - Removed Node.js setup for building packages
+   - Removed dependency installation (`npm ci`)
+   - Removed workspace package building
+   - Removed manual package copying steps
+
+2. **Streamlined Deployment Process**:
+
+   - The workflow now only:
+     - Checks out the code
+     - Verifies the monorepo structure
+     - Sets up Node.js only for the Vercel CLI
+     - Installs the Vercel CLI
+     - Triggers the deployment with environment-specific settings
+     - Verifies the deployment
+
+3. **Benefits**:
+   - Faster workflow execution
+   - Less duplication of work (Vercel handles the build)
+   - Reduced complexity
+   - More reliable builds (using Vercel's optimized build system)
+
+This approach takes full advantage of Vercel's Git integration and build system. The `vercel.json` configuration and `scripts/prepare-vercel-deploy.js` script handle all the workspace package preparation during Vercel's build process, eliminating the need to do this work in the GitHub Actions workflow.
 
 ## Benefits of These Changes
 

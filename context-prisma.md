@@ -671,3 +671,37 @@ By focusing only on the web app during deployment, we ensure that:
 - Vercel doesn't attempt to build the API or other parts of the monorepo
 - The web app has access to all required dependencies
 - The application is built consistently according to Vercel's best practices
+
+### Vercel Deployment Workspace Package Fix
+
+To address the "Module not found" errors for workspace packages during Vercel deployment, we've implemented the following solution:
+
+1. **Created a Deployment Preparation Script**:
+
+   - Added `scripts/prepare-vercel-deploy.js` that:
+     - Builds all workspace packages using `npm run build:packages`
+     - Creates the necessary directory structure in the web app's `node_modules` directory
+     - Copies the built packages (shared, UI, database) to make them available to the web app
+
+2. **Updated Vercel Configuration**:
+
+   - Modified `vercel.json` to use the preparation script:
+     ```json
+     {
+       "buildCommand": "npm install && node scripts/prepare-vercel-deploy.js && cd apps/web && npm run build"
+     }
+     ```
+
+3. **Enhanced Package Configurations**:
+   - Updated workspace package.json files with proper exports configuration:
+     ```json
+     "exports": {
+       ".": {
+         "import": "./dist/index.mjs",
+         "require": "./dist/index.js",
+         "types": "./dist/index.d.ts"
+       }
+     }
+     ```
+
+This approach allows Vercel to build the web app successfully by ensuring all required workspace packages are available during the build process, without requiring changes to the import statements in the code.

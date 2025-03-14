@@ -1,9 +1,9 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "cd apps/web && npm install && npm run build",
+  "buildCommand": "npm install && node scripts/prepare-vercel-deploy.js && cd apps/web && npm run build",
   "devCommand": "npm run dev",
-  "installCommand": "cd apps/web && npm install",
+  "installCommand": "npm install",
   "outputDirectory": "apps/web/.next",
   "rewrites": [{ "source": "/(.*)", "destination": "/apps/web/$1" }],
   "ignoreCommand": "git diff --quiet HEAD^ HEAD ./apps/web/"
