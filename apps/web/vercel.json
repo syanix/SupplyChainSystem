@@ -1,8 +1,8 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "buildCommand": "npm install && npm run build",
-  "installCommand": "npm install",
+  "buildCommand": "jq 'del(.scripts.prepare)' package.json > package.json.tmp && mv package.json.tmp package.json && npm install && npm run build",
+  "installCommand": "jq 'del(.scripts.prepare)' package.json > package.json.tmp && mv package.json.tmp package.json && npm install",
   "outputDirectory": ".next",
   "regions": ["iad1"],
   "git": {

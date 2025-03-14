@@ -48,9 +48,11 @@ We've simplified the GitHub workflows to make them more maintainable and efficie
    - Added proper project naming for Vercel deployments (`supply-chain-system` for production, `staging-supply-chain-system` for staging)
    - Added `vercel.json` configuration file for consistent project settings
    - Added monorepo-specific configuration to handle the Next.js app in the `apps/web` directory
-   - Added Husky prepare script removal to prevent git-related errors
-   - Added step to prepare web app for standalone deployment by copying workspace dependencies
-   - Simplified deployment by using Vercel CLI directly
+   - Added `.npmrc` files to disable scripts during npm install
+   - Modified Vercel build commands to remove Husky prepare scripts before building
+   - Simplified deployment workflow by removing redundant steps:
+     - Removed manual package copying (now handled by Vercel's build process)
+     - Removed manual Husky script removal (now handled by .npmrc and vercel.json)
    - Improved verification process to ensure successful deployments
    - Leverages Vercel's build system to handle the web app build process
 
@@ -120,13 +122,10 @@ The `deploy-api.yml` workflow handles deployment to Fly.io:
 The `deploy-web.yml` workflow handles deployment to Vercel:
 
 1. Checks out the code directly from the repository
-2. Verifies the monorepo structure (checks for `apps/web` directory and key files)
-3. Prepares the web app for standalone deployment by copying workspace dependencies
-4. Removes the Husky prepare script to prevent git-related errors
-5. Changes to the web app directory before deployment
-6. Sets appropriate project name based on the deployment environment
-7. Deploys to Vercel using the CLI with environment-specific settings
-8. Verifies the deployment by checking the health endpoint
+2. Verifies the monorepo structure (checks for `apps/web` directory, key files, and configuration files)
+3. Ensures `.npmrc` files exist to disable scripts during npm install
+4. Deploys to Vercel using the CLI with environment-specific settings
+5. Verifies the deployment by checking the health endpoint
 
 The workflow uses different project names for different environments:
 
@@ -137,13 +136,15 @@ This ensures that each environment has its own dedicated Vercel project.
 
 We've also added monorepo-specific configuration in `vercel.json`:
 
-- Custom build command that focuses only on the web app
-- Custom install command that focuses only on the web app
+- Custom build command that focuses only on the web app and removes Husky prepare scripts
+- Custom install command that focuses only on the web app and removes Husky prepare scripts
 - Ignore command to only trigger builds when the web app changes
 - Custom output directory pointing to the web app's `.next` directory
 - Rewrites to properly handle the monorepo structure
 
-By focusing only on the web app during deployment, we ensure that Vercel doesn't attempt to build the API or other parts of the monorepo that aren't relevant to the web deployment.
+Additionally, we've added `.npmrc` files in both the root directory and the web app directory to disable scripts during npm install, which prevents Husky from trying to install git hooks.
+
+By focusing only on the web app during deployment and ensuring Husky doesn't cause issues, we ensure that Vercel doesn't attempt to build the API or other parts of the monorepo that aren't relevant to the web deployment.
 
 ## Benefits of These Changes
 
