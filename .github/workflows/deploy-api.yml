@@ -136,6 +136,8 @@ jobs:
           [env]
             NODE_ENV = "${{ inputs.environment }}"
             PORT = "3001"
+            DATABASE_URL = "${{ secrets.PRODUCTION_DATABASE_URL }}"
+            JWT_SECRET = "${{ secrets.PRODUCTION_JWT_SECRET }}"
 
           [http_service]
             internal_port = 3001
