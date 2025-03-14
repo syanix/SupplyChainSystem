@@ -633,24 +633,30 @@ This ensures that the frontend application can communicate with the correct back
 For Vercel deployment, we're using a Git-based approach:
 
 1. The workflow checks out the code directly from the repository
-2. It uses the Vercel CLI to deploy the application
-3. It sets appropriate project names for each environment:
+2. It verifies the monorepo structure (checks for `apps/web` directory and key files)
+3. It removes the Husky prepare script to prevent git-related errors during deployment
+4. It builds the Next.js application in the `apps/web` directory and verifies the build output
+5. It sets appropriate project names for each environment:
    - Production: `supply-chain-system`
    - Staging: `staging-supply-chain-system`
-4. Vercel handles the build process automatically
+6. Vercel handles the deployment process
 
-We've also added a `vercel.json` configuration file to ensure consistent project settings across deployments. This file specifies:
+We've added monorepo-specific configuration to handle the Next.js app in the `apps/web` directory:
 
-- The framework (Next.js)
-- Build, development, and install commands
-- Output directory
+1. **Root next.config.js**: A simple configuration file that helps Vercel identify the project structure
+2. **vercel.json**: Configuration file with:
+   - Custom build command that navigates to the `apps/web` directory
+   - Custom output directory pointing to `apps/web/.next`
+   - Rewrites to properly handle the monorepo structure
+   - Framework specification (Next.js)
 
 This approach simplifies the deployment process by leveraging Vercel's built-in Git integration and build system. The workflow sets the appropriate environment variables and project names based on the deployment target, ensuring that the frontend application can communicate with the correct backend API and deploy to the correct Vercel project.
 
-The simplified workflow eliminates the need for:
+The workflow includes comprehensive checks to ensure that:
 
-- Downloading and extracting artifacts
-- Complex directory detection and manipulation
-- Custom project configuration files
+- The monorepo structure is correct
+- The build process completes successfully
+- The necessary build artifacts (including routes-manifest.json) are created
+- The deployment is verified via health checks
 
-By letting Vercel handle the build process, we ensure that the application is built consistently and according to Vercel's best practices.
+By letting Vercel handle the build process with our custom configuration, we ensure that the application is built consistently and according to Vercel's best practices, while properly handling our monorepo structure.
