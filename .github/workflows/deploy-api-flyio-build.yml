@@ -57,10 +57,13 @@ jobs:
         run: |
           cat > Dockerfile << EOL
           # Build stage
-          FROM nestjs/cli:11-alpine AS builder
+          FROM node:20-alpine AS builder
 
           # Set working directory
           WORKDIR /app
+
+          # Install global packages
+          RUN npm install -g @nestjs/cli@11
 
           # Copy package files
           COPY package.json package-lock.json ./
@@ -82,10 +85,10 @@ jobs:
           RUN cd apps/api && npm run build
 
           # Runtime stage
-          FROM nestjs/cli:11-alpine
+          FROM node:20-alpine
 
-          # Install OpenSSL for Prisma
-          RUN apk add --no-cache openssl
+          # Install OpenSSL for Prisma and other necessary tools
+          RUN apk add --no-cache openssl curl
 
           # Set working directory
           WORKDIR /app
@@ -99,6 +102,9 @@ jobs:
 
           # Install production dependencies
           RUN npm ci --only=production
+
+          # Install global packages needed for runtime
+          RUN npm install -g @nestjs/config @nestjs/common @nestjs/core @nestjs/platform-express
 
           # Copy built files from builder
           COPY --from=builder /app/apps/api/dist ./apps/api/dist
