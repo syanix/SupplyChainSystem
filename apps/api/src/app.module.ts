@@ -52,7 +52,7 @@ export class AppModule {
         { path: "auth/login", method: RequestMethod.POST },
         { path: "auth/register", method: RequestMethod.POST },
         { path: "tenants", method: RequestMethod.POST },
-        { path: "admin/(.*)", method: RequestMethod.ALL },
+        { path: "admin/*", method: RequestMethod.ALL },
         { path: "health", method: RequestMethod.GET },
       )
       .forRoutes("*");
