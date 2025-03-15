@@ -9,11 +9,13 @@
     "dev": "tsc --watch",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts"
+    "db:seed": "ts-node --project tsconfig.seed.json prisma/seed.ts",
+    "db:check": "ts-node --project tsconfig.seed.json scripts/check-tables.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
-    "@supply-chain-system/shared": "*"
+    "@supply-chain-system/shared": "*",
+    "dotenv": "^16.4.7"
   },
   "devDependencies": {
     "prisma": "^5.7.0",

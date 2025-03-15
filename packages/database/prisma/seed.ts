@@ -1,5 +1,50 @@
 import { PrismaClient } from "@prisma/client";
 import * as bcrypt from "bcrypt";
+import * as dotenv from "dotenv";
+import * as path from "path";
+import * as fs from "fs";
+
+// Load environment variables from various locations
+// Try to load from the current directory first
+dotenv.config();
+
+// Then try to load from the database package directory
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+
+// Then try to load from the project root
+dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
+
+// Check if DATABASE_URL is set
+if (!process.env.DATABASE_URL) {
+  console.error("ERROR: DATABASE_URL environment variable is not set!");
+  console.error("Please set it before running the seed script.");
+
+  // Check if .env files exist in expected locations
+  const envPaths = [
+    path.resolve(__dirname, "../.env"),
+    path.resolve(__dirname, "../../../.env")
+  ];
+
+  console.error("\nChecking for .env files:");
+  envPaths.forEach(envPath => {
+    const exists = fs.existsSync(envPath);
+    console.error(`- ${envPath}: ${exists ? "EXISTS" : "MISSING"}`);
+
+    if (exists) {
+      try {
+        const content = fs.readFileSync(envPath, 'utf8');
+        const hasDbUrl = content.includes('DATABASE_URL=');
+        console.error(`  - Contains DATABASE_URL: ${hasDbUrl ? "YES" : "NO"}`);
+      } catch (err: any) {
+        console.error(`  - Error reading file: ${err.message}`);
+      }
+    }
+  });
+
+  process.exit(1);
+}
+
+console.log("Using DATABASE_URL:", process.env.DATABASE_URL.replace(/:([^:@]+)@/, ":****@"));
 
 const prisma = new PrismaClient();
 
