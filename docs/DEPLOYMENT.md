@@ -29,6 +29,25 @@ The project uses GitHub Actions for automated deployments. The CI/CD pipeline is
 
 For more details on the CI/CD setup, see the [CI/CD README](../CICD_README.md).
 
+### API Deployment Options
+
+We have two deployment workflows for the API:
+
+1. **Artifact-based Deployment** (Traditional):
+
+   - Uses pre-built artifacts from a previous build workflow
+   - Requires a separate build step before deployment
+   - Artifacts are downloaded from GitHub Artifacts storage
+   - Suitable for scenarios where builds need to be verified before deployment
+
+2. **Direct Build Deployment** (Recommended):
+   - Builds the project directly on Fly.io during deployment
+   - Uses a multi-stage Dockerfile to build the project and its dependencies
+   - No need for separate build workflow or artifact storage
+   - Simpler process with fewer steps and dependencies
+
+To use the direct build deployment, trigger the `Deploy API to Fly.io (Direct Build)` workflow from the GitHub Actions UI.
+
 ## Manual Deployment
 
 ### Backend (NestJS API)

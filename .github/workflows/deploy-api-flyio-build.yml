@@ -1,4 +1,4 @@
-name: Deploy API to Fly.io
+name: Deploy API to Fly.io (Direct Build)
 
 on:
   workflow_dispatch:
@@ -11,14 +11,6 @@ on:
         options:
           - staging
           - production
-      run_id:
-        description: "GitHub Actions run ID containing the artifacts (optional)"
-        required: false
-        type: string
-      build_id:
-        description: "Build ID to deploy (optional)"
-        required: false
-        type: string
       confirm:
         description: 'Type "yes" to confirm deployment'
         required: true
@@ -44,80 +36,92 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - name: Find latest successful build workflow run
-        if: ${{ inputs.run_id == '' }}
-        id: find_build
-        run: |
-          # Find the latest successful build workflow run
-          LATEST_RUN_ID=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
-            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/build.yml/runs?status=success&per_page=1" | \
-            jq -r '.workflow_runs[0].id')
-
-          if [ "$LATEST_RUN_ID" == "null" ]; then
-            echo "No successful build workflow run found."
-            exit 1
-          fi
-
-          echo "Found latest successful build workflow run: $LATEST_RUN_ID"
-          echo "run_id=$LATEST_RUN_ID" >> $GITHUB_OUTPUT
-
-      - name: Set run ID
-        id: set_run_id
-        run: |
-          if [ "${{ inputs.run_id }}" != "" ]; then
-            echo "Using provided run ID: ${{ inputs.run_id }}"
-            echo "run_id=${{ inputs.run_id }}" >> $GITHUB_OUTPUT
-          else
-            echo "Using latest successful build run ID: ${{ steps.find_build.outputs.run_id }}"
-            echo "run_id=${{ steps.find_build.outputs.run_id }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Download build info
-        uses: actions/download-artifact@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
-          name: build-info
-          repository: ${{ github.repository }}
-          run-id: ${{ steps.set_run_id.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ./
+          fetch-depth: 0
 
-      - name: Set build ID
-        id: set_build_id
-        run: |
-          if [ "${{ inputs.build_id }}" != "" ]; then
-            echo "Using provided build ID: ${{ inputs.build_id }}"
-            echo "build_id=${{ inputs.build_id }}" >> $GITHUB_OUTPUT
-          elif [ -f "build-info.json" ]; then
-            BUILD_ID=$(jq -r '.build_id' build-info.json)
-            echo "Using build ID from build-info.json: $BUILD_ID"
-            echo "build_id=$BUILD_ID" >> $GITHUB_OUTPUT
-          else
-            echo "Using run ID as build ID: ${{ steps.set_run_id.outputs.run_id }}"
-            echo "build_id=${{ steps.set_run_id.outputs.run_id }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Download API artifact
-        uses: actions/download-artifact@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          name: api-artifact
-          repository: ${{ github.repository }}
-          run-id: ${{ steps.set_run_id.outputs.run_id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: ./
+          node-version: 20
+          cache: "npm"
 
-      - name: Extract API artifact
-        run: |
-          mkdir -p deploy-api
-          tar -xzf api-artifact.tar.gz -C deploy-api
-          ls -la deploy-api
+      - name: Install dependencies
+        run: npm ci
 
       - name: Setup Flyctl
         uses: superfly/flyctl-actions/setup-flyctl@1.4
 
+      - name: Create Dockerfile
+        run: |
+          cat > Dockerfile << EOL
+          # Build stage
+          FROM node:23.9-alpine AS builder
+
+          # Set working directory
+          WORKDIR /app
+
+          # Copy package files
+          COPY package.json package-lock.json ./
+          COPY apps/api/package.json ./apps/api/
+          COPY packages/database/package.json ./packages/database/
+          COPY packages/shared/package.json ./packages/shared/
+          COPY packages/ui/package.json ./packages/ui/
+
+          # Install dependencies
+          RUN npm ci
+
+          # Copy source code
+          COPY . .
+
+          # Build packages first
+          RUN npm run build:packages
+
+          # Build API
+          RUN cd apps/api && npm run build
+
+          # Remove dev dependencies
+          RUN npm prune --production
+
+          # Runtime stage
+          FROM node:23.9-alpine
+
+          # Install OpenSSL for Prisma
+          RUN apk add --no-cache openssl
+
+          # Set working directory
+          WORKDIR /app
+
+          # Copy built files and production dependencies
+          COPY --from=builder /app/package.json /app/package-lock.json ./
+          COPY --from=builder /app/node_modules ./node_modules
+          COPY --from=builder /app/apps/api/package.json ./apps/api/
+          COPY --from=builder /app/apps/api/dist ./apps/api/dist
+          COPY --from=builder /app/packages/database/package.json ./packages/database/
+          COPY --from=builder /app/packages/database/dist ./packages/database/dist
+          COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+          COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+          COPY --from=builder /app/packages/shared/dist ./packages/shared/dist
+          COPY --from=builder /app/packages/ui/package.json ./packages/ui/
+          COPY --from=builder /app/packages/ui/dist ./packages/ui/dist
+
+          # Generate Prisma client
+          RUN cd packages/database && npx prisma generate
+
+          # Expose the port
+          EXPOSE 3001
+
+          # Set environment variables
+          ENV NODE_ENV=production
+          ENV PORT=3001
+
+          # Start the application
+          CMD ["node", "apps/api/dist/main.js"]
+          EOL
+
       - name: Create fly.toml
         run: |
-          cd deploy-api
-
           # Create appropriate fly.toml based on environment
           if [ "${{ inputs.environment }}" == "production" ]; then
             APP_NAME="supply-chain-system-api"
@@ -133,17 +137,18 @@ jobs:
           app = "${APP_NAME}"
           primary_region = "syd"
 
+          [build]
+          dockerfile = "Dockerfile"
+
           [env]
             NODE_ENV = "${{ inputs.environment }}"
             PORT = "3001"
-            DATABASE_URL = "${{ secrets.PRODUCTION_DATABASE_URL }}"
-            JWT_SECRET = "${{ secrets.PRODUCTION_JWT_SECRET }}"
 
           [http_service]
             internal_port = 3001
             force_https = true
             auto_stop_machines = true
-            auto_start_machines = false
+            auto_start_machines = true
             min_machines_running = ${MIN_MACHINES}
             processes = ["app"]
             
@@ -167,8 +172,6 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         run: |
-          cd deploy-api
-
           # Set environment-specific secrets
           if [ "${{ inputs.environment }}" == "production" ]; then
             APP_NAME="supply-chain-system-api"
@@ -180,7 +183,7 @@ jobs:
 
           # Deploy the application
           echo "Deploying to $APP_NAME"
-          flyctl deploy --remote-only
+          flyctl deploy --app $APP_NAME
 
           # Store the app name for later use
           echo "app_name=$APP_NAME" >> $GITHUB_OUTPUT

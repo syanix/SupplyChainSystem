@@ -56,6 +56,31 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
+### Migration to Direct Fly.io Builds (2024-03-15)
+
+We've updated our Fly.io deployment approach to build the project directly on Fly.io instead of using pre-built artifacts:
+
+1. **Issue**: The previous approach required a separate build workflow to create artifacts, which were then downloaded and deployed in the deployment workflow. This added complexity and potential points of failure.
+
+2. **Solution**:
+
+   - Updated the deployment workflow to build the project directly on Fly.io
+   - Created a multi-stage Dockerfile that builds the project and its dependencies
+   - Removed the need for artifact storage and retrieval
+   - Simplified the deployment process by leveraging Fly.io's build capabilities
+   - Using Node.js 23.9 for improved performance and modern JavaScript features
+
+3. **Benefits**:
+   - Simplified deployment process with fewer steps
+   - Eliminated dependency on GitHub Artifacts
+   - More reliable builds with consistent environment
+   - Better integration with Fly.io's deployment model
+   - Easier troubleshooting with all build logs in one place
+   - Reduced complexity in the CI/CD pipeline
+   - Leveraging performance improvements in newer Node.js versions
+
+This change provides a more streamlined deployment process while maintaining the same functionality and deployment capabilities.
+
 ### Migration from TypeORM to Prisma (2023-11-28)
 
 We've migrated from TypeORM to Prisma as our ORM for database access:

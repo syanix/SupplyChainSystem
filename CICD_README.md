@@ -110,6 +110,26 @@ These files define:
 - HTTP service configuration
 - Health checks
 
+### API Deployment Options
+
+We have two deployment workflows for the API:
+
+1. **Artifact-based Deployment** (`deploy-api.yml`):
+
+   - Uses pre-built artifacts from a previous build workflow
+   - Requires a separate build step before deployment
+   - Artifacts are downloaded from GitHub Artifacts storage
+   - Suitable for scenarios where builds need to be verified before deployment
+
+2. **Direct Build Deployment** (`deploy-api-flyio-build.yml`):
+   - Builds the project directly on Fly.io during deployment
+   - Uses a multi-stage Dockerfile to build the project and its dependencies
+   - No need for separate build workflow or artifact storage
+   - Simpler process with fewer steps and dependencies
+   - Recommended for most deployment scenarios
+
+To use the direct build deployment, trigger the `Deploy API to Fly.io (Direct Build)` workflow from the GitHub Actions UI.
+
 ## Environment Variables and Secrets
 
 The following secrets need to be configured in GitHub:
