@@ -22,18 +22,18 @@ if (!process.env.DATABASE_URL) {
   // Check if .env files exist in expected locations
   const envPaths = [
     path.resolve(__dirname, "../.env"),
-    path.resolve(__dirname, "../../../.env")
+    path.resolve(__dirname, "../../../.env"),
   ];
 
   console.error("\nChecking for .env files:");
-  envPaths.forEach(envPath => {
+  envPaths.forEach((envPath) => {
     const exists = fs.existsSync(envPath);
     console.error(`- ${envPath}: ${exists ? "EXISTS" : "MISSING"}`);
 
     if (exists) {
       try {
-        const content = fs.readFileSync(envPath, 'utf8');
-        const hasDbUrl = content.includes('DATABASE_URL=');
+        const content = fs.readFileSync(envPath, "utf8");
+        const hasDbUrl = content.includes("DATABASE_URL=");
         console.error(`  - Contains DATABASE_URL: ${hasDbUrl ? "YES" : "NO"}`);
       } catch (err: any) {
         console.error(`  - Error reading file: ${err.message}`);
@@ -44,7 +44,10 @@ if (!process.env.DATABASE_URL) {
   process.exit(1);
 }
 
-console.log("Using DATABASE_URL:", process.env.DATABASE_URL.replace(/:([^:@]+)@/, ":****@"));
+console.log(
+  "Using DATABASE_URL:",
+  process.env.DATABASE_URL.replace(/:([^:@]+)@/, ":****@"),
+);
 
 const prisma = new PrismaClient();
 

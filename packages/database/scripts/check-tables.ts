@@ -11,7 +11,10 @@ const prisma = new PrismaClient();
 
 async function checkTables() {
   console.log("Checking database tables...");
-  console.log("Using DATABASE_URL:", process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ":****@"));
+  console.log(
+    "Using DATABASE_URL:",
+    process.env.DATABASE_URL?.replace(/:([^:@]+)@/, ":****@"),
+  );
 
   try {
     // Get counts for each table
@@ -43,7 +46,7 @@ async function checkTables() {
     // Get schema information using raw SQL
     console.log("\nSchema Information:");
     console.log("===================");
-    
+
     // Get list of tables in the schema
     const tables = await prisma.$queryRaw`
       SELECT table_name 
@@ -51,15 +54,15 @@ async function checkTables() {
       WHERE table_schema = 'supply_chain'
       ORDER BY table_name;
     `;
-    
+
     console.log("Tables in schema:", tables);
-    
+
     // Get sample data from each table
     if (tenantCount > 0) {
       const tenant = await prisma.tenant.findFirst();
       console.log("\nSample Tenant:", tenant);
     }
-    
+
     if (userCount > 0) {
       const user = await prisma.user.findFirst({
         select: {
@@ -71,11 +74,11 @@ async function checkTables() {
           isActive: true,
           createdAt: true,
           // Exclude password for security
-        }
+        },
       });
       console.log("\nSample User:", user);
     }
-    
+
     if (productCount > 0) {
       const product = await prisma.product.findFirst();
       console.log("\nSample Product:", product);
@@ -89,4 +92,4 @@ async function checkTables() {
   }
 }
 
-checkTables().catch(console.error); 
+checkTables().catch(console.error);
