@@ -56,30 +56,41 @@ A workflow that runs on pull requests to:
 
 ## Recent Changes
 
-### Migration to Direct Fly.io Builds (2024-03-15)
+### Migration to Direct Fly.io Builds with Node.js 20 (2024-03-15)
 
-We've updated our Fly.io deployment approach to build the project directly on Fly.io instead of using pre-built artifacts:
+We've updated our Fly.io deployment approach to use Node.js 20 LTS with explicit NestJS package installation:
 
-1. **Issue**: The previous approach required a separate build workflow to create artifacts, which were then downloaded and deployed in the deployment workflow. This added complexity and potential points of failure.
+1. **Issue**: Previous attempts with Node.js 23.9 and the NestJS CLI image were encountering module resolution issues, particularly with `@nestjs/config` and other core NestJS packages.
 
 2. **Solution**:
 
-   - Updated the deployment workflow to build the project directly on Fly.io
+   - Migrated to Node.js 20 LTS base image for better stability
+   - Explicitly installed NestJS CLI and core packages globally
    - Created a multi-stage Dockerfile that builds the project and its dependencies
-   - Removed the need for artifact storage and retrieval
-   - Simplified the deployment process by leveraging Fly.io's build capabilities
-   - Using Node.js 23.9 for improved performance and modern JavaScript features
+   - Consolidated deployment workflows into a single file (`deploy-api.yml`)
+   - Added explicit installation of required global packages in runtime stage
 
 3. **Benefits**:
-   - Simplified deployment process with fewer steps
-   - Eliminated dependency on GitHub Artifacts
-   - More reliable builds with consistent environment
-   - Better integration with Fly.io's deployment model
-   - Easier troubleshooting with all build logs in one place
-   - Reduced complexity in the CI/CD pipeline
-   - Leveraging performance improvements in newer Node.js versions
 
-This change provides a more streamlined deployment process while maintaining the same functionality and deployment capabilities.
+   - More stable deployment with LTS Node.js version
+   - Better control over NestJS package versions
+   - Explicit dependency management
+   - Simplified workflow maintenance with single deployment file
+   - Clearer separation between build and runtime environments
+   - Improved troubleshooting capabilities with added tools
+
+4. **Technical Details**:
+   - Using `node:20-alpine` as base image
+   - Installing NestJS CLI v11 globally in build stage
+   - Installing core NestJS packages globally in runtime stage:
+     - @nestjs/config
+     - @nestjs/common
+     - @nestjs/core
+     - @nestjs/platform-express
+   - Added curl for better debugging capabilities
+   - Maintained multi-stage build for optimized image size
+
+This change provides a more reliable deployment process while ensuring all necessary NestJS dependencies are properly available in the runtime environment.
 
 ### Migration from TypeORM to Prisma (2023-11-28)
 

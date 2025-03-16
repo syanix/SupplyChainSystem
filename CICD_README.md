@@ -54,6 +54,48 @@ This workflow handles deployment to the production environment. It is manually t
 5. **Health Check**: Verifies the deployment was successful
 6. **Rollback**: Automatically rolls back if health check fails
 
+### API Deployment (`deploy-api.yml`)
+
+This workflow handles deployment to both staging and production environments using a direct build approach on Fly.io.
+
+**Triggers:**
+
+- Manual trigger via GitHub Actions UI with confirmation
+- Environment selection (staging/production)
+
+**Key Features:**
+
+- Uses Node.js 20 LTS for stable production deployments
+- Multi-stage Docker build process
+- Direct dependency management with explicit NestJS package installation
+- Automatic health checks and rollback capability
+- Environment-specific configuration
+
+**Jobs:**
+
+1. **Validate**: Ensures deployment was explicitly confirmed
+2. **Deploy**:
+   - Builds the application using Node.js 20
+   - Creates environment-specific configuration
+   - Deploys to Fly.io
+   - Performs health checks
+   - Automatic rollback on failure
+
+**Docker Build Process:**
+
+1. **Build Stage**:
+
+   - Uses `node:20-alpine` base image
+   - Installs NestJS CLI globally
+   - Builds all packages and API
+   - Optimizes for production
+
+2. **Runtime Stage**:
+   - Uses `node:20-alpine` base image
+   - Installs only production dependencies
+   - Includes core NestJS packages globally
+   - Optimized for minimal size and maximum reliability
+
 ### Pull Request Checks (`pull-request.yml`)
 
 This workflow runs code quality checks on pull requests to ensure code meets the project's standards.
